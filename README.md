@@ -1,142 +1,113 @@
 # Bookmarker
 
-Bookmarker is a small ASP.NET Core web app that renders a bookmark dashboard from JSON files. It serves a single HTML page at `/` and builds the page content from files listed in `src\Bookmarker\bookmarks\.bookmarker.json`.
-
-## What it does
-
-- Loads a bookmark page configuration from `src\Bookmarker\bookmarks\.bookmarker.json`
-- Reads one or more bookmark data files per top-level page
-- Renders the result into `src\Bookmarker\template.html`
-- Serves the generated HTML from the root route: `GET /`
-
-The UI uses:
-
-- **tabs** for top-level pages such as `Ariadne` and `RGS`
-- **collapsible sections** for each bookmark file
-- **nested collapsible groups** when a group has a name
-- **links on one line** for a main URL plus additional related URLs
+Bookmarker is a self-hosted start page. Run it once, point your browser at it, and use it all day to navigate to the tools, environments, and services you actually need. All your links live in plain JSON files in your home directory — no database, no account, no sync.
 
 ## Requirements
 
 - .NET SDK 10.0
 
-## Run locally
-
-From the repository root:
+## Run
 
 ```powershell
-dotnet build .\grdev.bookmarker.sln
 dotnet run --project .\src\Bookmarker\Bookmarker.csproj
 ```
 
-The development launch profile runs on:
+Then open `http://localhost:5069/` in your browser.
 
-- `http://localhost:5069`
-- `https://localhost:7144`
+On first run the app creates three files in your home directory:
 
-If you run with the default launch settings, open:
+| File | Purpose |
+|---|---|
+| `~/.bookmarker.json` | Root config — defines tabs and which files belong to each |
+| `~/.bookmarker.welcome.json` | Example bookmark content file |
+| `~/.bookmarker.social.json` | Example bookmark content file |
+| `~/.bookmarker.google.json` | Example bookmark content file |
 
-```text
-http://localhost:5069/
-```
+These files are never overwritten once created. Edit them freely.
 
-## Project structure
+## How to organise your bookmarks
 
-```text
-grdev.bookmarker.sln
-src\Bookmarker\
-  Program.cs
-  template.html
-  Models\
-    Bookmark.cs
-    BookmarkerOptions.cs
-  bookmarks\
-    .bookmarker.json
-    ariadne\
-    rgs\
-```
+### The two-level config
 
-## Configuration format
-
-### 1. Root configuration
-
-`src\Bookmarker\bookmarks\.bookmarker.json` defines the top-level tabs and the bookmark files that belong to each tab.
-
-Example:
+**`~/.bookmarker.json`** controls the top-level structure:
 
 ```json
 {
   "Tabs": [
     {
-      "Name": "Ariadne",
+      "Name": "Work",
       "Files": [
-        "bookmarks/ariadne/ariadne.bookmarks.json",
-        "bookmarks/ariadne/ariadne.development.bookmarks.json",
-        "bookmarks/ariadne/ariadne.staging.bookmarks.json"
+        "C:\\Users\\you\\.bookmarker.work.json",
+        "C:\\Users\\you\\.bookmarker.work-staging.json"
+      ]
+    },
+    {
+      "Name": "Personal",
+      "Files": [
+        "C:\\Users\\you\\.bookmarker.personal.json"
       ]
     }
   ]
 }
 ```
 
-Properties:
+Each entry in `Files` is an absolute path to a bookmark content file. Missing files are silently skipped, so you can safely reference files you haven't created yet.
 
-- `Tabs[]` - top-level tabs
-- `Tabs[].Name` - tab label
-- `Tabs[].Files[]` - relative paths to bookmark content files
-
-## 2. Bookmark content files
-
-Each file listed in `Files[]` is deserialized into this shape (`BookmarksFileContent`):
+**Each content file** maps to one collapsible section inside a tab:
 
 ```json
 {
-  "name": "Ariadne",
+  "name": "Infrastructure",
   "groups": [
     {
-      "name": "Infrastructure",
+      "name": "Monitoring",
       "sets": [
         {
           "name": "Logs",
-          "url": "http://localhost:5000"
-        },
-        {
-          "name": "Projects",
+          "url": "https://logs.example.com",
           "bookmarks": [
-            "Project 1=http://localhost:5000/project1",
-            "Project 2=http://localhost:5000/project2"
+            "Dev=https://logs.dev.example.com",
+            "Staging=https://logs.staging.example.com"
           ]
-        }
+        },
+        "Dashboard=https://dashboard.example.com"
       ]
     }
   ]
 }
 ```
 
-Properties:
+### What each property does
 
-- `name` - section title shown as the file header (`BookmarksFileContent.Name`)
-- `groups[]` - logical groups within that section (`BookmarksGroup[]`)
-- `groups[].name` - collapsible group title; if empty, the group content is shown without an extra wrapper
-- `groups[].sets[]` - bookmark entries within the group (`BookmarkSet[]`)
-- `sets[].name` - label text
-- `sets[].url` - main clickable link; if omitted or empty, only the label is shown
-- `sets[].bookmarks[]` - extra named links rendered after the main label; each entry is either a `"name=url"` string or an object with `name` and `url` properties
+| Property | What it controls |
+|---|---|
+| `name` (file level) | Section heading inside the tab |
+| `groups[].name` | Collapsible group heading; omit for an ungrouped list |
+| `sets[].name` | Link label |
+| `sets[].url` | Primary link; omit to render as a plain text label |
+| `sets[].bookmarks[]` | Extra links on the same row, shown after a pipe separator |
 
-## Rendering behavior
+A bookmark entry in `bookmarks[]` can be written in two ways:
 
-The current implementation in `Program.cs` behaves as follows:
+```json
+"Label=https://url.com"
+```
+```json
+{ "name": "Label", "url": "https://url.com" }
+```
 
-- The app only exposes `GET /`
-- Missing files listed in `.bookmarker.json` are skipped
-- JSON is read with case-insensitive property matching
-- Trailing commas in JSON are allowed
-- The first tab, first file section, and first named group are opened by default
-- The footer shows the full path to the active root configuration file
+### How the JSON structure maps to the UI
 
-## Notes
+```
+Tab                 ← Tabs[].Name
+  └─ Section        ← one content file (files[].name)
+       └─ Group     ← groups[].name  (collapsible if named)
+            └─ Row  ← sets[].name + url
+                 └─ Related links  ← sets[].bookmarks[]
+```
 
-- `appsettings.json` is currently only used for standard ASP.NET Core logging settings
-- The page is generated server-side from string replacement in `template.html`
-- The bookmark data lives under `src\Bookmarker\bookmarks\`
-- The sample configuration references `ariadne.development.bookmarks.json`, but the app tolerates that file being absent because non-existent files are filtered out
+A tab can contain multiple files; each file renders as its own collapsible section inside that tab. This lets you split a large tab into logical files without creating a new tab.
+
+## Refreshing
+
+The page is cached in memory after the first load. If you edit a bookmark file and want to see the changes, click the **↻** button in the footer — it re-reads all files without restarting the app.
