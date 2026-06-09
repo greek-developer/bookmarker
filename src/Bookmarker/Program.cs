@@ -32,8 +32,13 @@ if (!File.Exists(userConfigPath))
     File.WriteAllText(welcomeFilePath, JsonSerializer.Serialize(WelcomeBookmarkSet().BookmarksFileContents[0], serializerOptions));
 }
 
-app.MapGet("/", (IHostEnvironment host) =>
+string? cachedHtml = null;
+DateTime lastRead = DateTime.MinValue;
+
+string BuildHtml(IHostEnvironment host)
 {
+    lastRead = DateTime.Now;
+
     var template = File.ReadAllText(Path.Combine(host.ContentRootPath, "template.html"));
 
     var bookmarkerOptions = JsonSerializer.Deserialize<BookmarkerOptions>(
@@ -53,18 +58,29 @@ app.MapGet("/", (IHostEnvironment host) =>
 
     }).ToArray();
 
-    var html = Render(template, pages!, userConfigPath);
+    return Render(template, pages!, userConfigPath, lastRead);
+}
 
-    return Results.Content(html, "text/html");
+app.MapGet("/", (IHostEnvironment host) =>
+{
+    cachedHtml ??= BuildHtml(host);
+    return Results.Content(cachedHtml, "text/html");
+});
+
+app.MapPost("/refresh", (IHostEnvironment host) =>
+{
+    cachedHtml = null;
+    return Results.Redirect("/");
 });
 
 app.Run();
 
 string Render(
-    string htmlTemplate, 
+    string htmlTemplate,
     IEnumerable<BookmarksTab> bookmarkPages,
-    string configurationFileLocation )
-{   
+    string configurationFileLocation,
+    DateTime readAt)
+{
     var sb = new StringBuilder();
     foreach(var (bookmarkPage, pageIndex) in bookmarkPages.Select((v,i) => (v,i)))
     {
@@ -75,7 +91,7 @@ string Render(
         foreach(var (bookmarkFileContent, fileIndex) in bookmarkPage.BookmarksFileContents.Select((v,i) => (v,i)))
         {   
 
-            sb.AppendLine($"<details {(fileIndex == 0 ? "open" : "")}>");
+            sb.AppendLine($"<details open>");
             sb.AppendLine($"<summary><h2>{bookmarkFileContent.Name}</h2></summary>");            
             sb.AppendLine($"<div>");
 
@@ -85,7 +101,7 @@ string Render(
                 
                 if (useDetailsWrapper)
                 {
-                    sb.AppendLine($"<details {(groupIndex == 0 ? "open" : "")}>");
+                    sb.AppendLine($"<details open>");
                     sb.AppendLine($"<summary><h3>{group.Name}</h3></summary>");
                 }
 
@@ -127,7 +143,8 @@ string Render(
 
     return htmlTemplate
         .Replace("{{content}}", content)
-        .Replace("{{footer}}", configurationFileLocation.ToLower());
+        .Replace("{{footer}}", configurationFileLocation.ToLower())
+        .Replace("{{timestamp}}", readAt.ToString("yyyy/MM/dd HH:mm"));
 }
 
 
@@ -136,58 +153,42 @@ BookmarksTab WelcomeBookmarkSet()
     return new BookmarksTab
     {
         Name = "Welcome",
-        BookmarksFileContents = new []
+        BookmarksFileContents = new[]
         {
             new BookmarksFileContent
             {
-                Name = "These are the contents of the welcome file",
-                Groups = new []
+                Name = "Welcome to Bookmarker",
+                Groups = new[]
                 {
                     new BookmarksGroup
                     {
-                        Name = "This is a bookmark group",
-                        Sets = new []
+                        Name = "Bookmarker",
+                        Sets = new[]
                         {
                             new BookmarkSet
                             {
-                                Name = "This is a bookmark set",
-                                Url = "http://localhost:5000",
-                                Bookmarks = new []
+                                Name = "GitHub",
+                                Url = "https://github.com/greek-developer/bookmarker",
+                                Bookmarks = new[]
                                 {
-                                    new Bookmark
-                                    {
-                                        Name = "README",
-                                        Url = "http://github.com"
-                                    },
-                                    new Bookmark
-                                    {
-                                        Name = "WELCOME",
-                                        Url = "http://github.com"
-                                    },
-                                    new Bookmark
-                                    {
-                                        Name = "CONTRIBUTING",
-                                        Url = "http://github.com"
-                                    }
+                                    new Bookmark { Name = "README",       Url = "https://github.com/greek-developer/bookmarker#readme" },
+                                    new Bookmark { Name = "Issues",       Url = "https://github.com/greek-developer/bookmarker/issues" },
+                                    new Bookmark { Name = "Releases",     Url = "https://github.com/greek-developer/bookmarker/releases" },
                                 }
+                            },
+                            new BookmarkSet
+                            {
+                                Name = "Configuration",
+                                Url = "https://github.com/greek-developer/bookmarker#configuration-format",
                             }
                         }
                     },
                     new BookmarksGroup
                     {
-                        Name = "This is another bookmark group",
-                        Sets = new []
+                        Name = "GreekDeveloper",
+                        Sets = new[]
                         {
-                            new BookmarkSet
-                            {
-                                Name = "Project 1",
-                                Url = "http://localhost:5000/project1"
-                            },
-                            new BookmarkSet
-                            {
-                                Name = "Project 2",
-                                Url = "http://localhost:5000/project2"
-                            }
+                            new BookmarkSet { Name = "Blog",  Url = "http://greekdeveloper.com" },
                         }
                     }
                 }

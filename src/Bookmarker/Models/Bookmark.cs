@@ -27,6 +27,7 @@ public class BookmarksGroup
     public BookmarkSet[] Sets { get; set; } = Array.Empty<BookmarkSet>();
 }
 
+[JsonConverter(typeof(BookmarkSetJsonConverter))]
 public class BookmarkSet: Bookmark
 {
     // List of additional urls to be displayed on the same line or below based on design
@@ -53,16 +54,12 @@ public class BookmarkJsonConverter : JsonConverter<Bookmark>
             var raw = reader.GetString() ?? string.Empty;
             var separatorIndex = raw.IndexOf('=');
 
-            if (separatorIndex < 0)
-            {
-                return new Bookmark { Name = raw, Url = string.Empty };
-            }
+            var name = separatorIndex < 0 ? raw : raw[..separatorIndex].Trim();
+            var url  = separatorIndex < 0 ? string.Empty : raw[(separatorIndex + 1)..].Trim();
 
-            return new Bookmark
-            {
-                Name = raw[..separatorIndex].Trim(),
-                Url = raw[(separatorIndex + 1)..].Trim()
-            };
+            return typeToConvert == typeof(BookmarkSet)
+                ? new BookmarkSet { Name = name, Url = url }
+                : new Bookmark   { Name = name, Url = url };
         }
 
         if (reader.TokenType == JsonTokenType.StartObject)
@@ -70,11 +67,24 @@ public class BookmarkJsonConverter : JsonConverter<Bookmark>
             using var jsonObject = JsonDocument.ParseValue(ref reader);
             var root = jsonObject.RootElement;
 
-            return new Bookmark
+            var name = GetPropertyValue(root, "name");
+            var url  = GetPropertyValue(root, "url");
+
+            // find bookmarks array case-insensitively
+            Bookmark[]? bookmarks = null;
+            foreach (var prop in root.EnumerateObject())
             {
-                Name = GetPropertyValue(root, "name"),
-                Url = GetPropertyValue(root, "url")
-            };
+                if (string.Equals(prop.Name, "bookmarks", StringComparison.OrdinalIgnoreCase))
+                {
+                    bookmarks = JsonSerializer.Deserialize<Bookmark[]>(prop.Value.GetRawText(), options);
+                    break;
+                }
+            }
+
+            if (typeToConvert == typeof(BookmarkSet) || bookmarks is { Length: > 0 })
+                return new BookmarkSet { Name = name, Url = url, Bookmarks = bookmarks ?? [] };
+
+            return new Bookmark { Name = name, Url = url };
         }
 
         throw new JsonException("Bookmark must be either a string in 'name=url' format or an object.");
@@ -111,4 +121,15 @@ public class BookmarkJsonConverter : JsonConverter<Bookmark>
 
         return string.Empty;
     }
+}
+
+public class BookmarkSetJsonConverter : JsonConverter<BookmarkSet>
+{
+    private static readonly BookmarkJsonConverter _inner = new();
+
+    public override BookmarkSet Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => (BookmarkSet)_inner.Read(ref reader, typeof(BookmarkSet), options)!;
+
+    public override void Write(Utf8JsonWriter writer, BookmarkSet value, JsonSerializerOptions options)
+        => _inner.Write(writer, value, options);
 }
