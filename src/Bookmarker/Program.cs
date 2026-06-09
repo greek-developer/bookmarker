@@ -50,7 +50,6 @@ string BuildHtml(IHostEnvironment host)
         Name = pageOptions.Name,
 
         BookmarksFileContents = pageOptions.Files
-            .Select(f => Path.IsPathRooted(f) ? f : Path.Combine(host.ContentRootPath, f))
             .Where(File.Exists)
             .Select(File.ReadAllText)
             .Select(c => JsonSerializer.Deserialize<BookmarksFileContent>(c, serializerOptions))
