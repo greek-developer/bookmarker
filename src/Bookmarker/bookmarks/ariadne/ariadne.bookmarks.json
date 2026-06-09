@@ -1,0 +1,69 @@
+{
+    "name":"Ariadne",
+    "groups":
+    [
+        {
+            "name": "",
+            "sets":
+            [
+                {
+                    "name": "Ariadne Repository",
+                    "url": "http://localhost:5000",
+                    "bookmarks": 
+                    [
+                        "README = http://github.com",
+                        "WELCOME = http://github.com",
+                        "CONTRIBUTING = http://github.com"
+                    ]
+                },
+
+                {
+                    "name" : "Management",
+                    "bookmarks":                    
+                    [
+                        {"name": "Jira", "url": "http://localhost:5000/project1"},
+                        {"name": "Confluence", "url": "http://localhost:5000/project2"}
+                    ]
+                },
+
+                {
+                    "name" : "Communications",
+                    "bookmarks":                    
+                    [
+                        {"name": "Slack Channel", "url": "http://localhost:5000/project1"},
+                        {"name": "Project 2", "url": "http://localhost:5000/project2"}
+                    ]
+                }
+            ]
+        },
+
+        {
+            "name": "Infrastructure",
+            "sets":
+            [
+                {
+                    "name": "Logs",
+                    "url": "http://localhost:5000"
+                },
+
+                {
+                    "name" : "Rabbits",
+                    "bookmarks":                    
+                    [
+                        {"name": "Project 1", "url": "http://localhost:5000/project1"},
+                        {"name": "Project 2", "url": "http://localhost:5000/project2"}
+                    ]
+                },
+
+                {
+                    "name" : "Redises",
+                    "bookmarks":                    
+                    [
+                        {"name": "Project 1", "url": "http://localhost:5000/project1"},
+                        {"name": "Project 2", "url": "http://localhost:5000/project2"}
+                    ]
+                }
+            ]
+        }
+    ]    
+}

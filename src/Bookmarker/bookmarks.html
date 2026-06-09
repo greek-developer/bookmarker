@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Marker — Bookmark Manager</title>
+<style>
+  :root{
+    --bg:#0b0d10; --fg:#e7e9ee; --muted:#8a93a6; --muted-2:#5b6473;
+    --border:#1c2028; --border-2:#262b35;
+    --sec:#13161c; --sec-2:#171b22;
+    --primary:#7c9cff; --primary-fg:#0b0d10;
+    --star:#e6b450;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{background:var(--bg);color:var(--fg);font:13px/1.4 var(--mono)}
+  .app{display:flex;flex-direction:column;height:100vh}
+
+  /* Hide the radios themselves */
+  .tab-radio{position:absolute;opacity:0;pointer-events:none}
+
+  /* Top bar */
+  .topbar{display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .brand{display:flex;align-items:center;gap:6px;font-weight:600}
+  .brand .dot{width:10px;height:10px;background:var(--primary);border-radius:2px}
+  .sep{color:var(--muted-2)}
+  .crumb{color:var(--muted)}
+  .crumb.cur{color:var(--fg)}
+  .search{display:flex;align-items:center;gap:8px;height:28px;flex:1;max-width:420px;margin-left:12px;
+    padding:0 8px;border:1px solid var(--border);background:var(--sec);border-radius:6px}
+  .search input{flex:1;background:transparent;border:0;outline:0;color:var(--fg);font:12px var(--mono)}
+  .search input::placeholder{color:var(--muted-2)}
+  .kbd{border:1px solid var(--border);background:var(--bg);color:var(--muted);
+    font-size:10px;padding:1px 5px;border-radius:3px}
+  .actions{margin-left:auto;display:flex;align-items:center;gap:4px}
+  .btn{height:28px;display:inline-flex;align-items:center;gap:6px;padding:0 8px;
+    border:0;background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;font:12px var(--mono)}
+  .btn:hover{background:var(--sec);color:var(--fg)}
+  .seg{display:flex;height:28px;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .seg span{display:inline-flex;align-items:center;justify-content:center;width:28px;color:var(--muted)}
+  .seg span.on{background:var(--sec-2);color:var(--fg)}
+  .btn.primary{background:var(--primary);color:var(--primary-fg)}
+  .btn.primary:hover{background:#92acff;color:var(--primary-fg)}
+
+  /* Tabs */
+  .tabs{display:flex;align-items:center;height:36px;padding:0 8px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .tab{position:relative;display:inline-flex;align-items:center;gap:6px;height:100%;padding:0 12px;
+    color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
+  .tab:hover{color:var(--fg)}
+  .pill{background:var(--sec-2);color:var(--muted);border-radius:3px;padding:1px 5px;font-size:10px;margin-left:4px}
+  .tabs .meta{margin-left:auto;padding-right:8px;color:var(--muted);font-size:11px;display:flex;gap:6px}
+
+  /* Tab panel groups: hidden by default */
+  .tab-group{display:none}
+
+  /* Active tab + matching group via :checked ~ sibling rules */
+  #t-work:checked    ~ .tabs label[for="t-work"],
+  #t-reading:checked ~ .tabs label[for="t-reading"],
+  #t-watch:checked   ~ .tabs label[for="t-watch"],
+  #t-inspo:checked   ~ .tabs label[for="t-inspo"]{color:var(--fg)}
+
+  #t-work:checked    ~ .tabs label[for="t-work"]::after,
+  #t-reading:checked ~ .tabs label[for="t-reading"]::after,
+  #t-watch:checked   ~ .tabs label[for="t-watch"]::after,
+  #t-inspo:checked   ~ .tabs label[for="t-inspo"]::after{
+    content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--primary)
+  }
+
+  #t-work:checked    ~ .scroll #g-work,
+  #t-reading:checked ~ .scroll #g-reading,
+  #t-watch:checked   ~ .scroll #g-watch,
+  #t-inspo:checked   ~ .scroll #g-inspo{display:block}
+
+  /* Panels */
+  .scroll{flex:1;overflow:auto}
+  .panel{border-bottom:1px solid var(--border)}
+  .panel-head{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;background:var(--sec)}
+  .panel-head .caret{color:var(--muted);font-size:10px;width:10px;text-align:center}
+  .panel-head .folder{color:var(--primary);font-size:11px}
+  .panel-head .title{font-size:12px;font-weight:600;letter-spacing:-0.01em}
+  .panel-head .pill{background:var(--bg)}
+  .panel-head .more{margin-left:auto;color:var(--muted);opacity:0;font-size:14px}
+  .panel:hover .panel-head .more{opacity:1}
+
+  /* Items */
+  .item{display:flex;gap:8px;align-items:flex-start;padding:6px 12px;border-top:1px solid var(--border);cursor:pointer}
+  .item:first-child{border-top:0}
+  .item:hover{background:var(--sec-2)}
+  .fav{flex-shrink:0;width:16px;height:16px;margin-top:1px;border:1px solid var(--border);
+    background:var(--sec);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;
+    font-size:10px;color:var(--muted)}
+  .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .row1{display:flex;align-items:baseline;gap:8px;min-width:0}
+  .title{font-size:12.5px;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .url{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .desc{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .star{color:var(--star);font-size:11px;flex-shrink:0}
+  .tags{display:flex;flex-wrap:wrap;gap:4px;padding-top:2px}
+  .tag{height:16px;display:inline-flex;align-items:center;gap:2px;padding:0 5px;
+    border:1px solid var(--border);border-radius:3px;color:var(--muted);font-size:10px}
+  .meta-r{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:10px;padding-top:2px;flex-shrink:0}
+
+  /* Status */
+  .status{display:flex;align-items:center;gap:12px;height:24px;padding:0 12px;
+    border-top:1px solid var(--border);background:var(--sec);color:var(--muted);font-size:10px;flex-shrink:0}
+  .status .right{margin-left:auto}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Tab radios (must be siblings of .tabs and .scroll so :checked ~ works) -->
+  <input class="tab-radio" type="radio" name="tab" id="t-work" checked />
+  <input class="tab-radio" type="radio" name="tab" id="t-reading" />
+  <input class="tab-radio" type="radio" name="tab" id="t-watch" />
+  <input class="tab-radio" type="radio" name="tab" id="t-inspo" />
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span>marker</div>
+    <span class="sep">/</span><span class="crumb">workspace</span>
+    <span class="sep">/</span><span class="crumb cur">personal</span>
+
+    <div class="search">
+      <span style="color:var(--muted)">⌕</span>
+      <input placeholder="Search bookmarks, tags, urls…" />
+      <span class="kbd">⌘K</span>
+    </div>
+
+    <div class="actions">
+      <button class="btn">⌥ Filter</button>
+      <div class="seg"><span class="on">≡</span><span>▦</span></div>
+      <button class="btn primary">+ New</button>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabs">
+    <label class="tab" for="t-work">▤ Work <span class="pill">42</span></label>
+    <label class="tab" for="t-reading">▤ Reading <span class="pill">28</span></label>
+    <label class="tab" for="t-watch">▤ Watch later <span class="pill">17</span></label>
+    <label class="tab" for="t-inspo">★ Inspiration <span class="pill">64</span></label>
+    <div class="meta"><span>collapsible groups</span><span>·</span><span>sample data</span></div>
+  </nav>
+
+  <!-- Content -->
+  <div class="scroll">
+
+    <!-- ============ WORK ============ -->
+    <div class="tab-group" id="g-work">
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Design Systems</span><span class="pill">4</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Radix UI — Primitives</span><span class="star">★</span><span class="url">radix-ui.com/primitives</span></div>
+            <div class="desc">Unstyled, accessible components for building high‑quality design systems.</div>
+            <div class="tags"><span class="tag">#react</span><span class="tag">#a11y</span><span class="tag">#components</span></div>
+          </div>
+          <div class="meta-r"><span>2d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">⌥</span>
+          <div class="body">
+            <div class="row1"><span class="title">shadcn/ui</span><span class="url">ui.shadcn.com</span></div>
+            <div class="desc">Beautifully designed components you can copy and paste.</div>
+            <div class="tags"><span class="tag">#react</span><span class="tag">#tailwind</span></div>
+          </div>
+          <div class="meta-r"><span>5d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Vercel Geist</span><span class="url">vercel.com/geist</span></div>
+            <div class="tags"><span class="tag">#design</span><span class="tag">#tokens</span></div>
+          </div>
+          <div class="meta-r"><span>1w</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Tailwind UI Patterns</span><span class="url">tailwindui.com/components</span></div>
+            <div class="tags"><span class="tag">#tailwind</span><span class="tag">#patterns</span></div>
+          </div>
+          <div class="meta-r"><span>2w</span></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Repositories</span><span class="pill">5</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">⌥</span>
+          <div class="body">
+            <div class="row1"><span class="title">TanStack/router</span><span class="star">★</span><span class="url">github.com/TanStack/router</span></div>
+            <div class="desc">Type‑safe router for React with built‑in caching & first‑class search params.</div>
+            <div class="tags"><span class="tag">#router</span><span class="tag">#typescript</span></div>
+          </div>
+          <div class="meta-r"><span>3h</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">⌥</span>
+          <div class="body">
+            <div class="row1"><span class="title">vercel/ai</span><span class="url">github.com/vercel/ai</span></div>
+            <div class="tags"><span class="tag">#ai</span><span class="tag">#sdk</span></div>
+          </div>
+          <div class="meta-r"><span>1d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">⌥</span>
+          <div class="body">
+            <div class="row1"><span class="title">pmndrs/zustand</span><span class="url">github.com/pmndrs/zustand</span></div>
+            <div class="tags"><span class="tag">#state</span></div>
+          </div>
+          <div class="meta-r"><span>4d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">⌥</span>
+          <div class="body">
+            <div class="row1"><span class="title">honojs/hono</span><span class="url">github.com/honojs/hono</span></div>
+            <div class="tags"><span class="tag">#server</span><span class="tag">#edge</span></div>
+          </div>
+          <div class="meta-r"><span>1w</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">⌥</span>
+          <div class="body">
+            <div class="row1"><span class="title">drizzle-team/drizzle-orm</span><span class="url">github.com/drizzle-team/drizzle-orm</span></div>
+            <div class="tags"><span class="tag">#orm</span><span class="tag">#sql</span></div>
+          </div>
+          <div class="meta-r"><span>2w</span></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Documentation</span><span class="pill">3</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">≡</span>
+          <div class="body">
+            <div class="row1"><span class="title">MDN — Web APIs</span><span class="url">developer.mozilla.org/en-US/docs/Web/API</span></div>
+            <div class="tags"><span class="tag">#reference</span></div>
+          </div>
+          <div class="meta-r"><span>1d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">≡</span>
+          <div class="body">
+            <div class="row1"><span class="title">React 19 Reference</span><span class="url">react.dev/reference/react</span></div>
+            <div class="tags"><span class="tag">#react</span></div>
+          </div>
+          <div class="meta-r"><span>6d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">≡</span>
+          <div class="body">
+            <div class="row1"><span class="title">PostgreSQL 17 Docs</span><span class="url">postgresql.org/docs/17</span></div>
+            <div class="tags"><span class="tag">#db</span><span class="tag">#sql</span></div>
+          </div>
+          <div class="meta-r"><span>2w</span></div>
+        </article>
+      </section>
+    </div>
+
+    <!-- ============ READING ============ -->
+    <div class="tab-group" id="g-reading">
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Long‑form Essays</span><span class="pill">3</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">The Grug Brained Developer</span><span class="star">★</span><span class="url">grugbrain.dev</span></div>
+            <div class="desc">A layman's guide to thinking like the self‑aware smol brained.</div>
+            <div class="tags"><span class="tag">#philosophy</span><span class="tag">#eng</span></div>
+          </div>
+          <div class="meta-r"><span>4h</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">≡</span>
+          <div class="body">
+            <div class="row1"><span class="title">Worse Is Better</span><span class="url">dreamsongs.com/RiseOfWorseIsBetter</span></div>
+            <div class="tags"><span class="tag">#essay</span></div>
+          </div>
+          <div class="meta-r"><span>3d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">≡</span>
+          <div class="body">
+            <div class="row1"><span class="title">The Law of Leaky Abstractions</span><span class="url">joelonsoftware.com</span></div>
+            <div class="tags"><span class="tag">#classic</span></div>
+          </div>
+          <div class="meta-r"><span>1w</span></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Newsletters</span><span class="pill">2</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Stratechery — Aggregation Theory</span><span class="url">stratechery.com</span></div>
+            <div class="tags"><span class="tag">#business</span><span class="tag">#tech</span></div>
+          </div>
+          <div class="meta-r"><span>2d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Bytes — JavaScript Weekly</span><span class="url">bytes.dev</span></div>
+            <div class="tags"><span class="tag">#js</span><span class="tag">#weekly</span></div>
+          </div>
+          <div class="meta-r"><span>5d</span></div>
+        </article>
+      </section>
+    </div>
+
+    <!-- ============ WATCH ============ -->
+    <div class="tab-group" id="g-watch">
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Conference Talks</span><span class="pill">3</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">▶</span>
+          <div class="body">
+            <div class="row1"><span class="title">Rich Hickey — Simple Made Easy</span><span class="star">★</span><span class="url">youtube.com/watch?v=SxdOUGdseq4</span></div>
+            <div class="tags"><span class="tag">#clojure</span><span class="tag">#design</span></div>
+          </div>
+          <div class="meta-r"><span>1d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">▶</span>
+          <div class="body">
+            <div class="row1"><span class="title">Bret Victor — Inventing on Principle</span><span class="url">youtube.com/watch?v=PUv66718DII</span></div>
+            <div class="tags"><span class="tag">#design</span></div>
+          </div>
+          <div class="meta-r"><span>3d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">▶</span>
+          <div class="body">
+            <div class="row1"><span class="title">Linus Torvalds on Git</span><span class="url">youtube.com/watch?v=4XpnKHJAok8</span></div>
+            <div class="tags"><span class="tag">#git</span></div>
+          </div>
+          <div class="meta-r"><span>2w</span></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Tutorials</span><span class="pill">2</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">▶</span>
+          <div class="body">
+            <div class="row1"><span class="title">Build a Compiler in 60 Minutes</span><span class="url">youtube.com/watch?v=compiler-60</span></div>
+            <div class="tags"><span class="tag">#compilers</span></div>
+          </div>
+          <div class="meta-r"><span>6h</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">▶</span>
+          <div class="body">
+            <div class="row1"><span class="title">WebGPU from Scratch</span><span class="url">youtube.com/watch?v=webgpu-scratch</span></div>
+            <div class="tags"><span class="tag">#graphics</span></div>
+          </div>
+          <div class="meta-r"><span>4d</span></div>
+        </article>
+      </section>
+    </div>
+
+    <!-- ============ INSPIRATION ============ -->
+    <div class="tab-group" id="g-inspo">
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Portfolios</span><span class="pill">3</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Rauno — rauno.me</span><span class="star">★</span><span class="url">rauno.me</span></div>
+            <div class="tags"><span class="tag">#interaction</span><span class="tag">#motion</span></div>
+          </div>
+          <div class="meta-r"><span>2d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Brittany Chiang</span><span class="url">brittanychiang.com</span></div>
+            <div class="tags"><span class="tag">#dev</span></div>
+          </div>
+          <div class="meta-r"><span>1w</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Bruno Simon</span><span class="url">bruno-simon.com</span></div>
+            <div class="tags"><span class="tag">#3d</span><span class="tag">#webgl</span></div>
+          </div>
+          <div class="meta-r"><span>3w</span></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span class="caret">▾</span><span class="folder">▤</span>
+          <span class="title">Studios &amp; Agencies</span><span class="pill">2</span>
+          <span class="more">⋯</span>
+        </div>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Active Theory</span><span class="url">activetheory.net</span></div>
+            <div class="tags"><span class="tag">#studio</span></div>
+          </div>
+          <div class="meta-r"><span>5d</span></div>
+        </article>
+        <article class="item">
+          <span class="fav">◯</span>
+          <div class="body">
+            <div class="row1"><span class="title">Ueno</span><span class="url">ueno.co</span></div>
+            <div class="tags"><span class="tag">#studio</span></div>
+          </div>
+          <div class="meta-r"><span>2w</span></div>
+        </article>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- Status -->
+  <footer class="status">
+    <span># 12 tags</span><span>·</span><span>151 bookmarks total</span>
+    <span class="right">marker v0.4.2 — local‑first</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<html>
+    <head>
+        <title>GRDEV - Bookmarker</title>
+        <style>
+            body 
+            {
+                font-family: system-ui, sans-serif;
+                font-size: 18px;
+                margin: 0;
+                padding: 20px;
+                background: #f9f9f9;
+            }
+
+            .tabs {
+                display: flex;
+                flex-wrap: wrap; /* Allows content to wrap below the labels */            
+            }
+
+            /* Hide the radio buttons */
+            .tabs > input[type="radio"] {
+                display: none;
+            }
+
+            /* Style the labels to look like tabs */
+            .tabs > label {
+                padding: 8px;
+                background: #e0e0e0;
+                cursor: pointer;
+                user-select: none;
+                order: 1; /* Force all labels to the top */
+
+                border: 1px solid #ccc;
+                
+                margin-right: 4px; /* tab labels gap*/
+                
+                min-width: 8em;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            /* The actual content areas */
+            .tabs > div {
+                width: 100%;
+                order: 2; /* Force all content areas below the labels */
+                display: none;
+                padding: 20px;
+                border: 1px solid #ccc;
+                background: #fff;
+            }
+
+            /* Logic: Show content when the preceding radio is checked */
+            .tabs > input[type="radio"]:checked + label + div {
+                display: block;
+            }
+
+            /* Active tab styling */
+            .tabs > input[type="radio"]:checked + label {
+                background: #fff;
+                border-bottom: 1px solid #fff;                
+                position: relative;
+                z-index: 2;
+                margin-bottom: -1px; /* Overlap the content border */
+            }        
+
+            details {            
+                padding: 0 8px;
+                border-left: 1px solid #eee;
+                margin: 8px 16px;
+            }
+
+            ul {
+                margin: 0px;
+            }
+            
+            li {
+                margin: 8px 0;
+            }
+
+            summary{
+                cursor: pointer;
+                user-select: none;
+            }
+
+            summary h1, summary h2, summary h3 {
+                display: inline;
+                margin: 0;
+                /*font-size: 1.2rem; /* Adjust as needed */
+            }
+
+            footer {
+                margin-top: 10px;
+                padding: 10px;
+                text-align: center;
+                /*font-size: 1.2em;*/
+                color: #888;
+            }
+
+        </style>
+    </head>
+    <body>        
+        <div class="tabs">
+            {{content}}      
+        </div>   
+        <footer> (C) 2026 - GR DEV - {thomas.sarmis@gmail.com} - {{footer}} </footer>
+    </body>    
+</html>
