@@ -14,23 +14,7 @@ var app = builder.Build();
 var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 var userConfigPath = Path.Combine(userProfile, ".bookmarker.json");
 
-if (!File.Exists(userConfigPath))
-{
-    Console.WriteLine($"No configuration file found at {userConfigPath}, creating defaults.");
-
-    var welcomeFilePath = Path.Combine(userProfile, ".bookmarker.welcome.json");
-
-    var defaultOptions = new BookmarkerOptions
-    {
-        Tabs = new[]
-        {
-            new BookmarkerTabsOptions { Name = "Welcome", Files = new[] { welcomeFilePath } }
-        }
-    };
-
-    File.WriteAllText(userConfigPath, JsonSerializer.Serialize(defaultOptions, serializerOptions));
-    File.WriteAllText(welcomeFilePath, JsonSerializer.Serialize(WelcomeBookmarkSet().BookmarksFileContents[0], serializerOptions));
-}
+Defaults.EnsureUserConfig(userConfigPath, serializerOptions);
 
 string? cachedHtml = null;
 DateTime lastRead = DateTime.MinValue;
@@ -149,51 +133,3 @@ string Render(
 }
 
 
-BookmarksTab WelcomeBookmarkSet()
-{
-    return new BookmarksTab
-    {
-        Name = "Welcome",
-        BookmarksFileContents = new[]
-        {
-            new BookmarksFileContent
-            {
-                Name = "Welcome to Bookmarker",
-                Groups = new[]
-                {
-                    new BookmarksGroup
-                    {
-                        Name = "Bookmarker",
-                        Sets = new[]
-                        {
-                            new BookmarkSet
-                            {
-                                Name = "GitHub",
-                                Url = "https://github.com/greek-developer/bookmarker",
-                                Bookmarks = new[]
-                                {
-                                    new Bookmark { Name = "README",       Url = "https://github.com/greek-developer/bookmarker#readme" },
-                                    new Bookmark { Name = "Issues",       Url = "https://github.com/greek-developer/bookmarker/issues" },
-                                    new Bookmark { Name = "Releases",     Url = "https://github.com/greek-developer/bookmarker/releases" },
-                                }
-                            },
-                            new BookmarkSet
-                            {
-                                Name = "Configuration",
-                                Url = "https://github.com/greek-developer/bookmarker#configuration-format",
-                            }
-                        }
-                    },
-                    new BookmarksGroup
-                    {
-                        Name = "GreekDeveloper",
-                        Sets = new[]
-                        {
-                            new BookmarkSet { Name = "Blog",  Url = "http://greekdeveloper.com" },
-                        }
-                    }
-                }
-            }
-        }
-    };
-}
