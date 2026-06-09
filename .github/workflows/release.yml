@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    # Triggered by a version bump in the .csproj
+    paths:
+      - '**/*.csproj'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so we can compare versions and push tags
+
+      - name: Setup Build Environment
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Check Version
+        id: check_version
+        run: |
+          CSPROJ=src/Bookmarker/Bookmarker.csproj
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" "$CSPROJ")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Package version: $VERSION"
+
+          if git show HEAD~1:"$CSPROJ" | grep -q "<Version>$VERSION</Version>"; then
+            echo "Version did not change. Exiting."
+            exit 0
+          fi
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Publish Windows x64
+        run: >
+          dotnet publish src/Bookmarker/Bookmarker.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o ./artifacts/win-x64
+
+      - name: Publish Linux x64
+        run: >
+          dotnet publish src/Bookmarker/Bookmarker.csproj
+          -c Release
+          -r linux-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o ./artifacts/linux-x64
+
+      - name: Zip Artifacts
+        run: |
+          cd artifacts
+          zip -r bookmarker-v${VERSION}-win-x64.zip   win-x64/
+          zip -r bookmarker-v${VERSION}-linux-x64.zip linux-x64/
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag v${VERSION}
+          git push origin v${VERSION}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          generate_release_notes: true
+          files: |
+            artifacts/bookmarker-v${{ env.VERSION }}-win-x64.zip
+            artifacts/bookmarker-v${{ env.VERSION }}-linux-x64.zip

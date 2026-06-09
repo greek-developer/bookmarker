@@ -1,10 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Title>Bookmarker</Title>
+    <Description>Self-hosted bookmark dashboard — a personal start page served from JSON files</Description>
+    <Authors>Thomas Sarmis (thomas.sarmis@gmail.com), GRDEV</Authors>
+    <RepositoryUrl>https://github.com/greek-developer/bookmarker</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://greekdeveloper.com/projects/bookmarker</PackageProjectUrl>
+  </PropertyGroup>
 
 </Project>
