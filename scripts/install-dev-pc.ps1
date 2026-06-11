@@ -1,22 +1,27 @@
-#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
     Builds Bookmarker in Release mode and installs or updates it on this machine.
-    Run from the scripts\ folder or anywhere — paths are resolved relative to the script location.
+    Automatically re-launches as administrator if not already elevated.
 #>
 
-$ServiceName    = "Bookmarker"
-$DisplayName    = "Bookmarker - Start Page"
-$Description    = "Self-hosted bookmark dashboard."
-$InstallDir     = "C:\Program Files\Bookmarker"
-$ExePath        = Join-Path $InstallDir "Bookmarker.exe"
-$RepoRoot       = Split-Path $PSScriptRoot -Parent
-$ProjectPath    = Join-Path $RepoRoot "src\Bookmarker\Bookmarker.csproj"
-$PublishDir     = Join-Path $RepoRoot "artifacts\dev-publish"
+# Self-elevate if not running as administrator
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Start-Process pwsh -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath) -Verb RunAs
+    exit
+}
+
+$ServiceName = "Bookmarker"
+$DisplayName = "Bookmarker - Start Page"
+$Description = "Self-hosted bookmark dashboard."
+$InstallDir  = "C:\Program Files\Bookmarker"
+$ExePath     = Join-Path $InstallDir "Bookmarker.exe"
+$RepoRoot    = Split-Path $PSScriptRoot -Parent
+$ProjectPath = Join-Path $RepoRoot "src\Bookmarker\Bookmarker.csproj"
+$PublishDir  = Join-Path $RepoRoot "artifacts\dev-publish"
 
 # Read port from appsettings.json
-$AppSettings    = Join-Path $RepoRoot "src\Bookmarker\appsettings.json"
-$Port           = 5069
+$AppSettings = Join-Path $RepoRoot "src\Bookmarker\appsettings.json"
+$Port        = 5069
 if (Test-Path $AppSettings) {
     $urls = (Get-Content $AppSettings | ConvertFrom-Json).Urls
     if ($urls -match ':(\d+)') { $Port = $Matches[1] }
@@ -26,7 +31,7 @@ Write-Host ""
 Write-Host "=== Bookmarker Dev Install ===" -ForegroundColor Cyan
 Write-Host ""
 
-# ── Step 1: Build ────────────────────────────────────────────────────────────
+# Step 1: Build
 Write-Host "[1/5] Building in Release mode..."
 
 dotnet publish $ProjectPath -c Release -r win-x64 --self-contained true `
@@ -41,10 +46,10 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "      Build succeeded." -ForegroundColor Green
 
-# ── Step 2: Stop service if running ─────────────────────────────────────────
+# Step 2: Stop service if running
 Write-Host ""
 $existing = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
-$isUpdate = $null -ne $existing
+$isUpdate  = $null -ne $existing
 
 if ($existing -and $existing.Status -eq "Running") {
     Write-Host "[2/5] Stopping service '$ServiceName'..." -ForegroundColor Yellow
@@ -52,10 +57,10 @@ if ($existing -and $existing.Status -eq "Running") {
     Start-Sleep -Seconds 2
     Write-Host "      Service stopped." -ForegroundColor Green
 } else {
-    Write-Host "[2/5] Service is not running — skipping stop." -ForegroundColor Gray
+    Write-Host "[2/5] Service is not running -- skipping stop." -ForegroundColor Gray
 }
 
-# ── Step 3: Copy files ───────────────────────────────────────────────────────
+# Step 3: Copy files
 Write-Host ""
 Write-Host "[3/5] Copying files to '$InstallDir'..."
 
@@ -74,10 +79,10 @@ foreach ($file in $files) {
 
 Write-Host "      All files copied." -ForegroundColor Green
 
-# ── Step 4: Register service (fresh install only) ────────────────────────────
+# Step 4: Register service (fresh install only)
 Write-Host ""
 if ($isUpdate) {
-    Write-Host "[4/5] Skipping registration — existing service will be reused." -ForegroundColor Gray
+    Write-Host "[4/5] Skipping registration -- existing service will be reused." -ForegroundColor Gray
 } else {
     Write-Host "[4/5] Registering service '$DisplayName'..."
 
@@ -91,7 +96,7 @@ if ($isUpdate) {
     Write-Host "      Service registered. Startup type: Automatic." -ForegroundColor Green
 }
 
-# ── Step 5: Start service ────────────────────────────────────────────────────
+# Step 5: Start service
 Write-Host ""
 Write-Host "[5/5] Starting service..."
 Start-Service -Name $ServiceName
@@ -106,18 +111,18 @@ if ($svc.Status -eq "Running") {
     exit 1
 }
 
-# ── Cleanup ──────────────────────────────────────────────────────────────────
+# Cleanup
 Remove-Item -Recurse -Force $PublishDir
 
-# ── Summary ──────────────────────────────────────────────────────────────────
+# Summary
 $action = if ($isUpdate) { "Updated" } else { "Installed" }
 Write-Host ""
 Write-Host "=== Done ===" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  $action to    : $InstallDir"
-Write-Host "  Service name  : $ServiceName"
-Write-Host "  Startup type  : Automatic (starts with Windows)"
-Write-Host "  URL           : http://localhost:$Port"
+Write-Host "  $action to   : $InstallDir"
+Write-Host "  Service name : $ServiceName"
+Write-Host "  Startup type : Automatic (starts with Windows)"
+Write-Host "  URL          : http://localhost:$Port"
 Write-Host ""
 Write-Host "Open http://localhost:$Port in your browser."
 Write-Host ""
