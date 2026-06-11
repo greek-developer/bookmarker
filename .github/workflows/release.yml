@@ -66,8 +66,10 @@ jobs:
           -p:IncludeNativeLibrariesForSelfExtract=true
           -o ./artifacts/linux-x64
 
-      - name: Bundle install script (Windows only)
-        run: cp install-service.ps1 ./artifacts/win-x64/
+      - name: Bundle install scripts (Windows only)
+        run: |
+          cp install-service.ps1            ./artifacts/win-x64/
+          cp install-on-program-files.ps1   ./artifacts/win-x64/
 
       - name: Zip Artifacts
         run: |
