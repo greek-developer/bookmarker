@@ -9,6 +9,7 @@ var serializerOptions = new JsonSerializerOptions
 };
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseWindowsService();
 var app = builder.Build();
 
 var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
