@@ -4,7 +4,7 @@ This file is for AI agents working on this repository. Read the documents below 
 
 ## Required reading
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — project layout, data model, request lifecycle, rendering pipeline, caching, and all key design decisions. Read this before touching any `.cs` file or `template.html`.
+- **[ARCHITECTURE.md](specs/ARCHITECTURE.md)** — project layout, data model, request lifecycle, rendering pipeline, caching, and all key design decisions. Read this before touching any `.cs` file or `template.html`.
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — conventions, rules, and a map of where each concern lives. Read this before writing or editing code.
 
 ## Build & verify

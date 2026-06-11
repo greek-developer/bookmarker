@@ -11,7 +11,7 @@ Default URLs: `http://localhost:5069` / `https://localhost:7144`
 
 ## Before you start
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md) for a full description of the project structure, data model, rendering pipeline, and key design decisions.
+Read [ARCHITECTURE.md](specs/ARCHITECTURE.md) for a full description of the project structure, data model, rendering pipeline, and key design decisions.
 
 ## Where things live
 
@@ -43,7 +43,7 @@ Read [ARCHITECTURE.md](ARCHITECTURE.md) for a full description of the project st
 
 External CSS is acceptable (CDN links). Avoid JavaScript beyond the existing title-sync script. Keep the file self-contained — no separate stylesheets or scripts on disk.
 
-See `prompts/design-prompt.md` for the original UI design brief.
+See `specs/ui/design-prompt.md` for the original UI design brief.
 
 ## Adding new default bookmark files
 

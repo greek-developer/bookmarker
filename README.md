@@ -2,6 +2,12 @@
 
 Bookmarker is a self-hosted start page. Run it once, point your browser at it, and use it all day to navigate to the tools, environments, and services you actually need. All your links live in plain JSON files in your home directory — no database, no account, no sync.
 
+## Documentation
+
+- [Architecture](specs/ARCHITECTURE.md)
+
+- specs/[UI Design Brief](specs/ui/design-prompt.md)
+
 ## Requirements
 
 - .NET SDK 10.0
