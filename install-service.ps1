@@ -22,7 +22,13 @@ $ServiceName    = "Bookmarker"
 $DisplayName    = "Bookmarker - Start Page"
 $Description    = "Self-hosted bookmark dashboard. Opens at http://localhost:5069"
 $ExePath        = Join-Path $PSScriptRoot "Bookmarker.exe"
+# Read port from appsettings.json if present, fall back to default
+$AppSettings    = Join-Path $PSScriptRoot "appsettings.json"
 $Port           = 5069
+if (Test-Path $AppSettings) {
+    $urls = (Get-Content $AppSettings | ConvertFrom-Json).Urls
+    if ($urls -match ':(\d+)') { $Port = $Matches[1] }
+}
 
 # ── Uninstall ────────────────────────────────────────────────────────────────
 if ($Uninstall) {

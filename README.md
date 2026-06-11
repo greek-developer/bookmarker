@@ -14,7 +14,33 @@ dotnet run --project .\src\Bookmarker\Bookmarker.csproj
 
 Then open `http://localhost:5069/` in your browser.
 
-On first run the app creates three files in your home directory:
+## Install as a Windows Service
+
+Download the latest `bookmarker-vX.X.X-win-x64.zip` from [Releases](https://github.com/greek-developer/bookmarker/releases), extract it, then run from an elevated PowerShell prompt:
+
+```powershell
+.\install-service.ps1
+```
+
+To remove the service:
+
+```powershell
+.\install-service.ps1 -Uninstall
+```
+
+## Changing the port
+
+Edit `appsettings.json` before installing the service:
+
+```json
+{
+  "Urls": "http://localhost:5069"
+}
+```
+
+Change `5069` to any free port. If the service is already running, stop it, edit the file, and start it again.
+
+## On first run the app creates these files in your home directory:
 
 | File | Purpose |
 |---|---|
