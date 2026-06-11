@@ -120,11 +120,11 @@ summary::-webkit-details-marker{display:none}
 
 /* ---------- groups (named <details><summary><h3>) ---------- */
 .tabs > div > details > div{
-  column-width:430px;column-gap:40px;
+  display:flex;flex-wrap:wrap;gap:22px 40px;align-items:flex-start;
 }
 .tabs > div > details > div > details,
-.tabs > div > details > div > ul{
-  break-inside:avoid;margin:0 0 22px;
+.tabs > div > details > div > div{
+  flex:0 1 400px;min-width:260px;margin-bottom:4px;
 }
 .tabs > div > details > div > details > summary{margin-bottom:11px}
 .tabs h3{
@@ -146,9 +146,11 @@ summary::-webkit-details-marker{display:none}
 .tabs li::before{
   content:"";position:absolute;left:0;top:11px;width:5px;height:1px;background:var(--line);
 }
-.tabs li a{text-decoration:none;border-radius:3px;transition:color .1s ease}
+.tabs li a{text-decoration:underline;text-underline-offset:3px;border-radius:3px;transition:color .1s ease,text-decoration-color .1s ease}
 .tabs li a:first-of-type{color:var(--fg);font-weight:500}
 .tabs li a:not(:first-of-type){color:var(--fg-dim);font-weight:400;font-size:13px}
+.tabs li .set-label{color:var(--fg);font-weight:500}
+.tabs li:has(.set-label) a{color:var(--fg-dim);font-weight:400;font-size:13px}
 .tabs li a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-shadow:0 0 8px rgba(63,215,214,.4)}
 .tabs li a:focus-visible{outline:1px solid var(--accent-dim);outline-offset:2px;color:var(--accent)}
 /* plain label rows (no link) */

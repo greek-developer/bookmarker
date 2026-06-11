@@ -98,9 +98,9 @@ string Render(
                 {
                     sb.AppendLine("<li>");
 
-                    sb.AppendLine( 
-                        string.IsNullOrEmpty(set.Url) 
-                        ? $"{set.Name}:"
+                    sb.AppendLine(
+                        string.IsNullOrEmpty(set.Url)
+                        ? $"<span class=\"set-label\">{set.Name}:</span>"
                         : $"<a href=\"{set.Url}\" target=\"_blank\">{set.Name}</a>");
                                                         
                     foreach(var bookmark in set.Bookmarks)
