@@ -124,7 +124,7 @@ summary::-webkit-details-marker{display:none}
 }
 .tabs > div > details > div > details,
 .tabs > div > details > div > div{
-  flex:0 1 400px;min-width:260px;margin-bottom:4px;
+  flex:1 1 calc((100% - 80px) / 3);min-width:260px;margin-bottom:4px;
 }
 .tabs > div > details > div > details > summary{margin-bottom:11px}
 .tabs h3{
@@ -204,7 +204,16 @@ footer .refresh-btn:hover{color:var(--accent);border-color:var(--accent-dim)}
     const checked = document.querySelector('.tabs > input[type="radio"]:checked');
     if (checked) document.title = 'bookmarker: ' + checked.nextElementSibling.textContent.trim();
   }
-  document.querySelectorAll('.tabs > input[type="radio"]').forEach(r => r.addEventListener('change', syncTitle));
+  function saveTab() {
+    const checked = document.querySelector('.tabs > input[type="radio"]:checked');
+    if (checked) localStorage.setItem('bookmarker:tab', checked.id);
+  }
+  function restoreTab() {
+    const id = localStorage.getItem('bookmarker:tab');
+    if (id) { const r = document.getElementById(id); if (r && r.type === 'radio') r.checked = true; }
+  }
+  document.querySelectorAll('.tabs > input[type="radio"]').forEach(r => r.addEventListener('change', () => { syncTitle(); saveTab(); }));
+  restoreTab();
   syncTitle();
 </script>
 </body>

@@ -38,7 +38,8 @@ string BuildHtml(IHostEnvironment host)
             .Where(File.Exists)
             .Select(File.ReadAllText)
             .Select(c => JsonSerializer.Deserialize<BookmarksFileContent>(c, serializerOptions))
-            .ToArray()!
+            .OfType<BookmarksFileContent>()
+            .ToArray()
 
     }).ToArray();
 
