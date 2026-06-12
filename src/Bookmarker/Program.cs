@@ -12,8 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseWindowsService();
 var app = builder.Build();
 
-var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-var userConfigPath = Path.Combine(userProfile, ".bookmarker.json");
+var userConfigPath = app.Configuration["BookmarkerConfigPath"] is { Length: > 0 } configured
+    ? configured
+    : @"C:\Program Files\Bookmarker\.bookmarker.json";
 
 Defaults.EnsureUserConfig(userConfigPath, serializerOptions);
 

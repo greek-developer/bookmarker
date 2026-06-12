@@ -46,14 +46,28 @@ Edit `appsettings.json` before installing the service:
 
 Change `5069` to any free port. If the service is already running, stop it, edit the file, and start it again.
 
-## On first run the app creates these files in your home directory:
+## Configuring the config file path
+
+By default Bookmarker looks for `.bookmarker.json` at `C:\Program Files\Bookmarker\.bookmarker.json`. This works correctly whether the app runs interactively or as a Windows Service, since the path does not depend on which user account the process runs under.
+
+To store the config somewhere else, set the path explicitly in `appsettings.json`:
+
+```json
+{
+  "BookmarkerConfigPath": "C:\\Users\\yourname\\.bookmarker.json"
+}
+```
+
+Leave the value empty (or omit the key entirely) to use the default next-to-exe location.
+
+## On first run the app creates these files in `C:\Program Files\Bookmarker\`:
 
 | File | Purpose |
 |---|---|
-| `~/.bookmarker.json` | Root config — defines tabs and which files belong to each |
-| `~/.bookmarker.welcome.json` | Example bookmark content file |
-| `~/.bookmarker.social.json` | Example bookmark content file |
-| `~/.bookmarker.google.json` | Example bookmark content file |
+| `.bookmarker.json` | Root config — defines tabs and which files belong to each |
+| `.bookmarker.welcome.json` | Example bookmark content file |
+| `.bookmarker.social.json` | Example bookmark content file |
+| `.bookmarker.google.json` | Example bookmark content file |
 
 These files are never overwritten once created. Edit them freely.
 
