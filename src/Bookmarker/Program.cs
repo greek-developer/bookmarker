@@ -62,9 +62,7 @@ string BuildHtml(IHostEnvironment host)
 }
 
 string ErrorPage(string heading, string detail) => $"""
-    <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>bookmarker — error</title>
-    <style>body{{background:#16181d;color:#e3e6ec;font-family:ui-monospace,monospace;padding:40px}}
-    h1{{color:#3fd7d6;font-size:16px}}pre{{color:#9aa0ac;white-space:pre-wrap;word-break:break-all}}</style></head>
+    <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>bookmarker — error</title></head>
     <body><h1>bookmarker</h1><p>{WebUtility.HtmlEncode(heading)}</p><pre>{WebUtility.HtmlEncode(detail)}</pre></body></html>
     """;
 
