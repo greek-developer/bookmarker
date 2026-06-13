@@ -6,6 +6,10 @@ The core idea is that **bookmark files are just JSON files — they live in your
 
 No database, no account, no sync, no browser extension.
 
+## Related
+
+- [Blog post](https://greekdeveloper.com/posts/2026/bookmarker/) — write-up on the motivation and design
+
 ## Documentation
 
 - [Architecture](specs/ARCHITECTURE.md)
