@@ -1,6 +1,10 @@
 # Bookmarker
 
-Bookmarker is a self-hosted start page. Run it once, point your browser at it, and use it all day to navigate to the tools, environments, and services you actually need. All your links live in plain JSON files in your home directory — no database, no account, no sync.
+Bookmarker is a self-hosted start page. Run it once, point your browser at it, and use it all day to navigate to the tools, environments, and services you actually need.
+
+The core idea is that **bookmark files are just JSON files — they live in your projects, not in your browser**. Every project or repository you work on can carry its own `.bookmarker.*.json` file alongside the code, tracked in git like any other file. You then compose your personal Bookmarker page by picking which files to include from whichever projects you are currently working on. Switch projects, update the list, refresh — your start page reflects exactly what you need right now, nothing more.
+
+No database, no account, no sync, no browser extension.
 
 ## Documentation
 
