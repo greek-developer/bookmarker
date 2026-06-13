@@ -3,9 +3,10 @@
   Bookmarker — template.html  (Direction "Shell")
   Drop-in replacement for src\Bookmarker\template.html.
 
-  The server replaces exactly two placeholders (global string replace):
-    {{content}} — the tab/section/link structure (input -> label -> div triplets)
-    {{footer}}  — a plain config file-path string
+  The server replaces exactly three placeholders (global string replace):
+    {{content}}   — the tab/section/link structure (input -> label -> div triplets)
+    {{footer}}    — a plain config file-path string
+    {{timestamp}} — last-read time formatted as yyyy/MM/dd HH:mm
 
   Non-obvious CSS notes
   ─────────────────────
