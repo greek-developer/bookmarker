@@ -28,25 +28,45 @@ string BuildHtml(IHostEnvironment host)
 
     var template = File.ReadAllText(Path.Combine(host.ContentRootPath, "template.html"));
 
-    var bookmarkerOptions = JsonSerializer.Deserialize<BookmarkerOptions>(
-        File.ReadAllText(userConfigPath),
-        serializerOptions);
-
-    var pages = bookmarkerOptions?.Tabs.Select(pageOptions => new BookmarksTab
+    BookmarkerOptions? bookmarkerOptions;
+    try
     {
-        Name = pageOptions.Name,
+        bookmarkerOptions = JsonSerializer.Deserialize<BookmarkerOptions>(
+            File.ReadAllText(userConfigPath),
+            serializerOptions);
+    }
+    catch (Exception ex)
+    {
+        return ErrorPage($"Failed to parse config file: {userConfigPath}", ex.Message);
+    }
 
-        BookmarksFileContents = pageOptions.Files
-            .Where(File.Exists)
-            .Select(File.ReadAllText)
-            .Select(c => JsonSerializer.Deserialize<BookmarksFileContent>(c, serializerOptions))
-            .OfType<BookmarksFileContent>()
-            .ToArray()
-
+    var pages = bookmarkerOptions?.Tabs.Select(pageOptions =>
+    {
+        var contents = new List<BookmarksFileContent>();
+        foreach (var file in pageOptions.Files.Where(File.Exists))
+        {
+            try
+            {
+                var parsed = JsonSerializer.Deserialize<BookmarksFileContent>(File.ReadAllText(file), serializerOptions);
+                if (parsed is not null) contents.Add(parsed);
+            }
+            catch (Exception ex)
+            {
+                contents.Add(new BookmarksFileContent { Name = $"[parse error] {Path.GetFileName(file)}: {ex.Message}" });
+            }
+        }
+        return new BookmarksTab { Name = pageOptions.Name, BookmarksFileContents = contents.ToArray() };
     }).ToArray();
 
     return Render(template, pages!, userConfigPath, lastRead);
 }
+
+string ErrorPage(string heading, string detail) => $"""
+    <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>bookmarker — error</title>
+    <style>body{{background:#16181d;color:#e3e6ec;font-family:ui-monospace,monospace;padding:40px}}
+    h1{{color:#3fd7d6;font-size:16px}}pre{{color:#9aa0ac;white-space:pre-wrap;word-break:break-all}}</style></head>
+    <body><h1>bookmarker</h1><p>{WebUtility.HtmlEncode(heading)}</p><pre>{WebUtility.HtmlEncode(detail)}</pre></body></html>
+    """;
 
 app.MapGet("/", (IHostEnvironment host) =>
 {
