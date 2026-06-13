@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -77,38 +78,38 @@ string Render(
         sb.AppendLine("<div>");
 
         foreach(var (bookmarkFileContent, fileIndex) in bookmarkPage.BookmarksFileContents.Select((v,i) => (v,i)))
-        {   
+        {
 
             sb.AppendLine($"<details open>");
-            sb.AppendLine($"<summary><h2>{bookmarkFileContent.Name}</h2></summary>");            
+            sb.AppendLine($"<summary><h2>{WebUtility.HtmlEncode(bookmarkFileContent.Name)}</h2></summary>");
             sb.AppendLine($"<div>");
 
             foreach(var (group, groupIndex) in bookmarkFileContent.Groups.Select((v,i) => (v,i)))
             {
                 var useDetailsWrapper = !string.IsNullOrEmpty(group.Name);
-                
+
                 if (useDetailsWrapper)
                 {
                     sb.AppendLine($"<details open>");
-                    sb.AppendLine($"<summary><h3>{group.Name}</h3></summary>");
+                    sb.AppendLine($"<summary><h3>{WebUtility.HtmlEncode(group.Name)}</h3></summary>");
                 }
 
                 sb.AppendLine($"<div>");
                 sb.AppendLine($"<ul>");
-                
+
                 foreach(var set in group.Sets)
                 {
                     sb.AppendLine("<li>");
 
                     sb.AppendLine(
                         string.IsNullOrEmpty(set.Url)
-                        ? $"<span class=\"set-label\">{set.Name}:</span>"
-                        : $"<a href=\"{set.Url}\" target=\"_blank\">{set.Name}</a>");
-                                                        
+                        ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}:</span>"
+                        : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
+
                     foreach(var bookmark in set.Bookmarks)
                     {
-                        sb.AppendLine($" | <a href=\"{bookmark.Url}\" target=\"_blank\">{bookmark.Name}</a>");
-                    }                    
+                        sb.AppendLine($" | <a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
+                    }
 
                     sb.AppendLine($"</li>");
                 }
