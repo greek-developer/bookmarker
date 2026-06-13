@@ -29,13 +29,16 @@ Then open `http://localhost:5069/` in your browser.
 Download the latest `bookmarker-vX.X.X-win-x64.zip` from [Releases](https://github.com/greek-developer/bookmarker/releases), extract it, then run from an elevated PowerShell prompt:
 
 ```powershell
-.\install-service.ps1
+.\install-on-program-files.ps1
 ```
+
+This copies the files to `C:\Program Files\Bookmarker\` and registers a Windows Service set to start automatically.
 
 To remove the service:
 
 ```powershell
-.\install-service.ps1 -Uninstall
+sc.exe stop Bookmarker
+sc.exe delete Bookmarker
 ```
 
 ## Changing the port
