@@ -47,11 +47,11 @@ Edit `appsettings.json` before installing the service:
 
 ```json
 {
-  "Urls": "http://localhost:5069"
+  "Urls": "http://*:5069"
 }
 ```
 
-Change `5069` to any free port. If the service is already running, stop it, edit the file, and start it again.
+Change `5069` to any free port. The `*` binds to all interfaces, which is required when running as a Windows Service. If the service is already running, stop it, edit the file, and start it again.
 
 ## Configuring the config file path
 
