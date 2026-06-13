@@ -9,6 +9,7 @@ public static class Defaults
         Console.WriteLine($"No configuration file found at {userConfigPath}, creating defaults.");
 
         var configDir = Path.GetDirectoryName(userConfigPath)!;
+        Directory.CreateDirectory(configDir);
         var welcomeFilePath = Path.Combine(configDir, ".bookmarker.welcome.json");
         var socialFilePath  = Path.Combine(configDir, ".bookmarker.social.json");
         var googleFilePath  = Path.Combine(configDir, ".bookmarker.google.json");
