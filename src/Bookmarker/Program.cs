@@ -80,7 +80,7 @@ app.MapPost("/refresh", (IHostEnvironment host) =>
     return Results.Redirect("/");
 });
 
-app.MapGet("/refresh", () => Results.Redirect("/"));
+app.MapGet("/refresh", () => { cachedHtml = null; return Results.Redirect("/"); });
 
 app.Run();
 
