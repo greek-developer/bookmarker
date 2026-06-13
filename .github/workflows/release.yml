@@ -68,7 +68,6 @@ jobs:
 
       - name: Bundle install scripts (Windows only)
         run: |
-          cp scripts/install-service.ps1            ./artifacts/win-x64/
           cp scripts/install-on-program-files.ps1   ./artifacts/win-x64/
 
       - name: Zip Artifacts
