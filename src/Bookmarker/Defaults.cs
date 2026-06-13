@@ -61,7 +61,7 @@ public static class Defaults
                     new BookmarkSet
                     {
                         Name = "Configuration",
-                        Url  = "https://github.com/greek-developer/bookmarker#configuration-format",
+                        Url  = "https://github.com/greek-developer/bookmarker#how-to-organise-your-bookmarks",
                     }
                 }
             },
