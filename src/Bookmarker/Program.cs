@@ -105,6 +105,7 @@ string Render(
             foreach(var (group, groupIndex) in bookmarkFileContent.Groups.Select((v,i) => (v,i)))
             {
                 var useDetailsWrapper = !string.IsNullOrEmpty(group.Name);
+                var isTable = string.Equals(group.Layout, "table", StringComparison.OrdinalIgnoreCase);
 
                 if (useDetailsWrapper)
                 {
@@ -112,34 +113,63 @@ string Render(
                     sb.AppendLine($"<summary><h3>{WebUtility.HtmlEncode(group.Name)}</h3></summary>");
                 }
 
-                sb.AppendLine($"<div>");
-                sb.AppendLine($"<ul>");
-
-                foreach(var set in group.Sets)
+                if (isTable)
                 {
-                    sb.AppendLine("<li>");
+                    // One column per cell; widest row determines the track count. max-content
+                    // tracks let the browser align columns exactly — no measurement needed.
+                    var cols = group.Sets.Length == 0 ? 1 : group.Sets.Max(s => 1 + s.Bookmarks.Length);
+                    sb.AppendLine($"<div class=\"grid-group\" style=\"--cols:{cols}\">");
 
-                    sb.AppendLine(
-                        string.IsNullOrEmpty(set.Url)
-                        ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}:</span>"
-                        : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
-
-                    foreach(var bookmark in set.Bookmarks)
+                    foreach(var set in group.Sets)
                     {
-                        sb.AppendLine($" | <a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
+                        sb.AppendLine("<div class=\"grid-row\">");
+
+                        sb.AppendLine(
+                            string.IsNullOrEmpty(set.Url)
+                            ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}</span>"
+                            : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
+
+                        foreach(var bookmark in set.Bookmarks)
+                        {
+                            sb.AppendLine($"<a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
+                        }
+
+                        sb.AppendLine("</div>");
                     }
 
-                    sb.AppendLine($"</li>");
+                    sb.AppendLine("</div>");
+                }
+                else
+                {
+                    sb.AppendLine($"<div>");
+                    sb.AppendLine($"<ul>");
+
+                    foreach(var set in group.Sets)
+                    {
+                        sb.AppendLine("<li>");
+
+                        sb.AppendLine(
+                            string.IsNullOrEmpty(set.Url)
+                            ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}:</span>"
+                            : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
+
+                        foreach(var bookmark in set.Bookmarks)
+                        {
+                            sb.AppendLine($" | <a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
+                        }
+
+                        sb.AppendLine($"</li>");
+                    }
+
+                    sb.AppendLine($"</ul>");
+                    sb.AppendLine($"</div>");
                 }
 
-                sb.AppendLine($"</ul>");
-                sb.AppendLine($"</div>");
-                
                 if (useDetailsWrapper)
                 {
                     sb.AppendLine($"</details>");
                 }
-            }            
+            }
             sb.AppendLine($"</div>");
             sb.AppendLine($"</details>");
         }

@@ -22,9 +22,14 @@ public class BookmarksGroup
 {
     // The name of the group
     public string Name { get; set; } = "";
-    
+
     // List of bookmarks or subgroups
     public BookmarkSet[] Sets { get; set; } = Array.Empty<BookmarkSet>();
+
+    // Render mode: "" / "list" (default) renders an indented link list;
+    // "table" renders the sets as a column-aligned grid (one row per set,
+    // one column per related bookmark). Compared case-insensitively.
+    public string Layout { get; set; } = "";
 }
 
 [JsonConverter(typeof(BookmarkSetJsonConverter))]

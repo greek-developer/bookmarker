@@ -161,6 +161,25 @@ summary::-webkit-details-marker{display:none}
 }
 .tabs li:not(:has(a))::before{background:transparent}
 
+/* ---------- table groups (column-aligned grid) ---------- */
+.grid-group{
+  display:grid;grid-template-columns:repeat(var(--cols),max-content);
+  gap:3px 28px;align-items:baseline;
+}
+/* each row is display:contents so its cells land directly in the grid; forcing
+   the first cell to column 1 breaks rows and leaves short rows' tracks empty */
+.grid-row{display:contents}
+.grid-row > :first-child{grid-column:1}
+.grid-group a{
+  text-decoration:underline;text-underline-offset:3px;border-radius:3px;
+  color:var(--fg-dim);font-weight:400;font-size:13px;
+  transition:color .1s ease,text-decoration-color .1s ease;
+}
+.grid-row > a:first-child{color:var(--fg);font-weight:500;font-size:14px}
+.grid-row > .set-label{color:var(--fg);font-weight:500}
+.grid-group a:hover{color:var(--accent);text-shadow:0 0 8px rgba(63,215,214,.4)}
+.grid-group a:focus-visible{outline:1px solid var(--accent-dim);outline-offset:2px;color:var(--accent)}
+
 /* ---------- footer ---------- */
 footer{
   margin-top:54px;border-top:1px solid var(--line);padding-top:16px;
