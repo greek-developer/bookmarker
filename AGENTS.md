@@ -16,6 +16,15 @@ dotnet run --project .\src\Bookmarker\Bookmarker.csproj
 
 After code changes, restart the process. After `template.html`-only changes, POST to `/refresh` to bust the cache without restarting.
 
+## Versioning
+
+Versions are computed by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning)
+from [`version.json`](version.json) plus the git height, and the patch bumps with every commit — see
+[README.md](README.md#versioning). To change the major/minor, hand-edit the `version` field in
+`version.json`. Do not run `nbgv set-version` (it drops this repo's `publicReleaseRefSpec` and
+`cloudBuild` settings), and never add a `<Version>` element to `Directory.Build.props` or a
+`.csproj`.
+
 ## Things agents must not do
 
 - Write files to the app content root at runtime (all user data goes to `%USERPROFILE%`)
