@@ -17,7 +17,7 @@ $InstallDir  = "C:\Program Files\Bookmarker"
 $ExePath     = Join-Path $InstallDir "Bookmarker.exe"
 $RepoRoot    = Split-Path $PSScriptRoot -Parent
 $ProjectPath = Join-Path $RepoRoot "src\Bookmarker\Bookmarker.csproj"
-$PublishDir  = Join-Path $RepoRoot "artifacts\dev-publish"
+$PublishDir  = Join-Path $RepoRoot "release\dev-publish"
 
 # Read port from appsettings.json
 $AppSettings = Join-Path $RepoRoot "src\Bookmarker\appsettings.json"
