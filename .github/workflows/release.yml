@@ -46,7 +46,7 @@ jobs:
           --self-contained true
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
-          -o ./artifacts/win-x64
+          -o ./release/win-x64
 
       - name: Publish Linux x64
         run: >
@@ -56,15 +56,15 @@ jobs:
           --self-contained true
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
-          -o ./artifacts/linux-x64
+          -o ./release/linux-x64
 
       - name: Bundle install scripts (Windows only)
         run: |
-          cp scripts/install-on-program-files.ps1   ./artifacts/win-x64/
+          cp scripts/install-on-program-files.ps1   ./release/win-x64/
 
       - name: Zip Artifacts
         run: |
-          cd artifacts
+          cd release
           zip -r bookmarker-v${NBGV_SimpleVersion}-win-x64.zip   win-x64/
           zip -r bookmarker-v${NBGV_SimpleVersion}-linux-x64.zip linux-x64/
 
@@ -82,5 +82,5 @@ jobs:
           name: v${{ env.NBGV_SimpleVersion }}
           generate_release_notes: true
           files: |
-            artifacts/bookmarker-v${{ env.NBGV_SimpleVersion }}-win-x64.zip
-            artifacts/bookmarker-v${{ env.NBGV_SimpleVersion }}-linux-x64.zip
+            release/bookmarker-v${{ env.NBGV_SimpleVersion }}-win-x64.zip
+            release/bookmarker-v${{ env.NBGV_SimpleVersion }}-linux-x64.zip

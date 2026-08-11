@@ -19,6 +19,18 @@ var userConfigPath = app.Configuration["BookmarkerConfigPath"] is { Length: > 0 
 
 Defaults.EnsureUserConfig(userConfigPath, serializerOptions);
 
+// Written next to the app at build time. Read once — the identity of a running build cannot
+// change without restarting it.
+var productionVersion = ProductionVersion.Read(
+    [AppContext.BaseDirectory, app.Environment.ContentRootPath],
+    serializerOptions);
+
+var versionJsonOptions = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    WriteIndented = true
+};
+
 string? cachedHtml = null;
 DateTime lastRead = DateTime.MinValue;
 
@@ -58,7 +70,7 @@ string BuildHtml(IHostEnvironment host)
         return new BookmarksTab { Name = pageOptions.Name, BookmarksFileContents = contents.ToArray() };
     }).ToArray();
 
-    return Render(template, pages!, userConfigPath, lastRead);
+    return Render(template, pages!, userConfigPath, lastRead, productionVersion.FooterText);
 }
 
 string ErrorPage(string heading, string detail) => $"""
@@ -80,13 +92,20 @@ app.MapPost("/refresh", (IHostEnvironment host) =>
 
 app.MapGet("/refresh", () => { cachedHtml = null; return Results.Redirect("/"); });
 
+// Returns ProductionVersion.json verbatim when the build wrote one, so what a deployment reads
+// is byte-for-byte what shipped. Falls back to the "unknown" identity when the file is absent.
+app.MapGet("/api/diagnostics/version", () => productionVersion.RawJson is { Length: > 0 } raw
+    ? Results.Content(raw, "application/json")
+    : Results.Json(productionVersion, versionJsonOptions));
+
 app.Run();
 
 string Render(
     string htmlTemplate,
     IEnumerable<BookmarksTab> bookmarkPages,
     string configurationFileLocation,
-    DateTime readAt)
+    DateTime readAt,
+    string versionText)
 {
     var sb = new StringBuilder();
     foreach(var (bookmarkPage, pageIndex) in bookmarkPages.Select((v,i) => (v,i)))
@@ -181,7 +200,8 @@ string Render(
     return htmlTemplate
         .Replace("{{content}}", content)
         .Replace("{{footer}}", configurationFileLocation.ToLower())
-        .Replace("{{timestamp}}", readAt.ToString("yyyy/MM/dd HH:mm"));
+        .Replace("{{timestamp}}", readAt.ToString("yyyy/MM/dd HH:mm"))
+        .Replace("{{version}}", WebUtility.HtmlEncode(versionText));
 }
 
 

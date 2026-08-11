@@ -189,6 +189,7 @@ footer{
 footer .path{color:var(--fg-dim)}
 footer .path .k{color:var(--accent-dim);margin-right:8px}
 footer .ts{color:var(--fg-faint);margin-left:16px}
+footer .build{color:var(--fg-faint)}
 footer .refresh-form{display:inline;margin-left:10px}
 footer .refresh-btn{
   background:none;border:1px solid var(--line);border-radius:3px;
@@ -215,6 +216,7 @@ footer .refresh-btn:hover{color:var(--accent);border-color:var(--accent-dim)}
     <span class="path">
       <span class="k">config</span>{{footer}}<span class="ts">{{timestamp}}</span><form class="refresh-form" method="post" action="/refresh"><button class="refresh-btn" type="submit" title="Reload bookmark files">↻</button></form>
     </span>
+    <span class="build" title="version - commit - build time">{{version}}</span>
     <span>© 2026 bookmarker</span>
   </footer>
 

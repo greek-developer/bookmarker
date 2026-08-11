@@ -30,7 +30,7 @@ The core insight here is that **a bookmark file is just a data file**. There's n
 | **Microsoft.Extensions.Hosting.WindowsServices** | Background service | One NuGet package and one `builder.Host.UseWindowsService()` call turns the app into a proper Windows Service. |
 | **Fira Code (Google Fonts CDN)** | Typography | Monospace throughout, loaded from CDN. The entire design direction is terminal/TUI aesthetic. |
 
-**Non-obvious detail**: the `template.html` UI was designed by giving a detailed written design brief to an AI (the brief is in `specs/ui/design-prompt.md`). The brief described the fixed HTML structure the backend emits and the visual direction; the AI produced the full CSS. The design brief is committed to the repo as a first-class spec document.
+**Non-obvious detail**: the `template.html` UI was designed by giving a detailed written design brief to an AI (the brief is in `docs/ui/design-prompt.md`). The brief described the fixed HTML structure the backend emits and the visual direction; the AI produced the full CSS. The design brief is committed to the repo as a first-class spec document.
 
 ---
 

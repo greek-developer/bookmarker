@@ -1,0 +1,7 @@
+# Line endings are CRLF everywhere, pinned here so every clone agrees regardless of
+# each developer's core.autocrlf setting. See AGENTS.md (Coding conventions).
+* text=auto eol=crlf
+
+# The one exception: scripts sh executes. A hook checked out with CRLF dies with
+# "bad interpreter: /bin/sh^M" — the shebang keeps the carriage return.
+scripts/.githooks/** text eol=lf

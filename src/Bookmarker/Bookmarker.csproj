@@ -2,12 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(AssemblyName).UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,5 +27,64 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://greekdeveloper.com/projects/bookmarker</PackageProjectUrl>
   </PropertyGroup>
+
+  <!--
+    ProductionVersion.json — written next to the app on both build and publish so a deployed
+    instance can report exactly which build it is. Nerdbank.GitVersioning supplies the version
+    and the commit SHA; the commit subject has to come from git itself, since NBGV does not
+    expose it. A build from an exported tree with no git available still succeeds — the subject
+    falls back to "unknown" rather than failing the build.
+  -->
+  <Target Name="ComputeProductionVersion" DependsOnTargets="GetBuildVersion">
+
+    <!-- '%25%25s' reaches git as '%s': MSBuild unescapes %25 to %, and Exec runs through cmd,
+         which collapses the resulting '%%' back to a single '%'. -->
+    <Exec Command="git log -1 --format=%25%25s"
+          ConsoleToMSBuild="true"
+          StandardOutputImportance="low"
+          EchoOff="true"
+          ContinueOnError="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="CommitSubject" />
+    </Exec>
+
+    <PropertyGroup>
+      <CommitSubject Condition="'$(CommitSubject)' == ''">unknown</CommitSubject>
+      <!-- JSON-escape, then MSBuild-escape so a ';' in the subject cannot split the item below. -->
+      <CommitSubject>$(CommitSubject.Replace('\', '\\').Replace('"', '\"'))</CommitSubject>
+      <CommitSubject>$([MSBuild]::Escape($(CommitSubject)))</CommitSubject>
+      <ProductionBuildTime>$([System.DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))</ProductionBuildTime>
+    </PropertyGroup>
+
+    <!-- %20 is an escaped space: MSBuild trims literal leading whitespace from an Include. -->
+    <ItemGroup>
+      <ProductionVersionLine Include="{" />
+      <ProductionVersionLine Include="%20%20&quot;version&quot;: &quot;$(Version)&quot;," />
+      <ProductionVersionLine Include="%20%20&quot;commit&quot;: {" />
+      <ProductionVersionLine Include="%20%20%20%20&quot;message&quot;: &quot;$(CommitSubject)&quot;," />
+      <ProductionVersionLine Include="%20%20%20%20&quot;sha&quot;: &quot;$(GitCommitId)&quot;" />
+      <ProductionVersionLine Include="%20%20}," />
+      <ProductionVersionLine Include="%20%20&quot;build&quot;: {" />
+      <ProductionVersionLine Include="%20%20%20%20&quot;time&quot;: &quot;$(ProductionBuildTime)&quot;" />
+      <ProductionVersionLine Include="%20%20}" />
+      <ProductionVersionLine Include="}" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="WriteProductionVersionToOutput"
+          AfterTargets="Build"
+          DependsOnTargets="ComputeProductionVersion">
+    <WriteLinesToFile File="$(OutDir)ProductionVersion.json"
+                      Lines="@(ProductionVersionLine)"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="WriteProductionVersionToPublish"
+          AfterTargets="Publish"
+          DependsOnTargets="ComputeProductionVersion">
+    <WriteLinesToFile File="$(PublishDir)ProductionVersion.json"
+                      Lines="@(ProductionVersionLine)"
+                      Overwrite="true" />
+  </Target>
 
 </Project>

@@ -12,21 +12,9 @@ No database, no account, no sync, no browser extension.
 
 ## Documentation
 
-- [Architecture](specs/ARCHITECTURE.md)
-
-- specs/[UI Design Brief](specs/ui/design-prompt.md)
-
-## Requirements
-
-- .NET SDK 10.0
-
-## Run
-
-```powershell
-dotnet run --project .\src\Bookmarker\Bookmarker.csproj
-```
-
-Then open `http://localhost:5069/` in your browser.
+- [Architecture](docs/ARCHITECTURE.md) — how the app is built
+- [UI Design Brief](docs/ui/design-prompt.md) — the brief the interface was designed from
+- [BRIEF.md](BRIEF.md) — building and running it yourself
 
 ## Install as a Windows Service
 

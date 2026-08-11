@@ -25,18 +25,25 @@ Browser GET /
 
 ```
 src\Bookmarker\
-  Program.cs              # startup, GET /, POST /refresh, Render()
+  Program.cs              # startup, GET /, POST /refresh, /api/diagnostics/version, Render()
   Defaults.cs             # EnsureUserConfig() — first-run file creation
-  template.html           # HTML shell; {{content}}, {{footer}}, {{timestamp}}
+  ProductionVersion.cs    # reads ProductionVersion.json emitted at build time
+  template.html           # HTML shell; {{content}}, {{footer}}, {{timestamp}}, {{version}}
   Models\
     Bookmark.cs           # data models + BookmarkJsonConverter + BookmarkSetJsonConverter
     BookmarkerOptions.cs  # BookmarkerOptions, BookmarkerTabsOptions
   bookmarks\              # empty — reserved for future bundled content
-prompts\
-  design-prompt.md        # Claude Design brief for the UI
-AGENTS.md
-ARCHITECTURE.md
-CONTRIBUTING.md
+tests\Bookmarker.UnitTests\
+  BookmarkJsonConverterTests.cs
+  BookmarkerOptionsTests.cs
+docs\
+  ARCHITECTURE.md         # this file
+  project-brief.md        # editorial brief for blog post / video
+  ui\design-prompt.md     # the design brief the UI CSS was generated from
+specs\                    # how the product behaves, one spec per domain
+tasks\tasks.md            # running task checklist
+AGENTS.md                 # the grdev standard — synced, never edited locally
+BRIEF.md                  # project ground truth
 README.md
 ```
 
