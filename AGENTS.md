@@ -348,11 +348,62 @@ This applies only to CLIs that are actually distributed. An internal or non-dist
 CLI — a build helper, a one-off maintenance tool, anything that never leaves the repo — is
 under no obligation to be packaged as a .NET global tool.
 
+### Naming
+
+One name runs through the whole chain, so nothing has to be looked up:
+
+| Thing | Rule | Example |
+|---|---|---|
+| Repository | The tool's name with a **`-cli`** suffix | `git-guard-cli` |
+| `PackageId` | `grdev.` + the repository name | `grdev.git-guard-cli` |
+| `ToolCommandName` | The repository name **without** the `-cli` suffix | `git-guard` |
+
+Lowercase throughout, hyphen-separated, and no `grdev` prefix on the command itself — the
+user types `git-guard`, not `grdev-git-guard`.
+
+The suffix earns its place on the repository and the package, where a bare name would be
+ambiguous among a shelf of them, and is dropped from the command, where the user is already
+naming one specific tool. Deriving all three from one word is what stops a package called
+`grdev.gitguard` from living in a repository called `git-guard`.
+
+**A published `PackageId` cannot be renamed.** Only new versions of new ids, with the old
+package left behind — so get the name right before the first publish, and deprecate the old
+id on nuget.org pointing at the replacement if it ever changes.
+
+### Where a tool stores things
+
+Everything a tool keeps in the user's profile — configuration, credentials, caches, tokens —
+goes in **one hidden folder named after the package id**:
+
+```
+%USERPROFILE%\.<PackageId>\
+```
+
+So `grdev.youtube-cli` keeps everything under `~/.grdev.youtube-cli/`, and files inside it
+are named for what they are, not for the tool: `client-secret.json`, not
+`grdev.youtube-client-secret.json`. The folder already says whose it is.
+
+| Rule | Detail |
+|---|---|
+| One folder per tool | Never scatter files across the profile root, and never share a folder between tools |
+| Named for the package | `.<PackageId>` exactly — the same name derived in [Naming](#naming) |
+| Hidden | The leading dot keeps a user's home directory readable |
+| Not `AppData` | One predictable location per tool, on every platform, that a user can find and back up |
+
+The point is that a user can see everything a tool put on their machine, and delete it, in
+one place. A credential file loose in the profile root and a token cache buried in `AppData`
+are the same tool's state in two places the user will never associate with each other.
+
+**Moving this path strands existing users.** Their configuration and their granted
+credentials stay where they were, and the tool silently behaves as if it had never been set
+up. If a path must change, move the existing folder as part of the change rather than leaving
+the user to discover it.
+
 | Property | Value |
 |---|---|
 | `PackAsTool` | `true` |
-| `ToolCommandName` | The command the user types — short, lowercase, no prefix (`narrate`, `gitguard`) |
-| `PackageId` | `grdev.<name>` |
+| `ToolCommandName` | See [Naming](#naming) |
+| `PackageId` | See [Naming](#naming) |
 | `PackageOutputPath` | Under `./release` — the repo's gitignored output directory |
 
 Package metadata (`Title`, `Description`, `Authors`, `RepositoryUrl`,
@@ -366,8 +417,8 @@ not prose it has to infer from `--help`. **Ship that guide inside the tool** and
 print it, so installing the package is the only prerequisite:
 
 ```
-dotnet tool install --global grdev.<name>
-<command> skill > ~/.claude/skills/<name>/SKILL.md
+dotnet tool install --global grdev.<name>-cli
+<name> skill > ~/.claude/skills/<name>/SKILL.md
 ```
 
 | Rule | Detail |
