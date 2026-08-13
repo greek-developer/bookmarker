@@ -11,8 +11,8 @@ public static class Defaults
         var configDir = Path.GetDirectoryName(userConfigPath)!;
         Directory.CreateDirectory(configDir);
         var welcomeFilePath = Path.Combine(configDir, ".bookmarker.welcome.json");
-        var socialFilePath  = Path.Combine(configDir, ".bookmarker.social.json");
-        var googleFilePath  = Path.Combine(configDir, ".bookmarker.google.json");
+        var socialFilePath = Path.Combine(configDir, ".bookmarker.social.json");
+        var googleFilePath = Path.Combine(configDir, ".bookmarker.google.json");
 
         var defaultOptions = new BookmarkerOptions
         {
@@ -31,10 +31,10 @@ public static class Defaults
             }
         };
 
-        File.WriteAllText(userConfigPath,  JsonSerializer.Serialize(defaultOptions,    serializerOptions));
-        File.WriteAllText(welcomeFilePath, JsonSerializer.Serialize(WelcomeContent(),  serializerOptions));
-        File.WriteAllText(socialFilePath,  JsonSerializer.Serialize(SocialContent(),   serializerOptions));
-        File.WriteAllText(googleFilePath,  JsonSerializer.Serialize(GoogleContent(),   serializerOptions));
+        File.WriteAllText(userConfigPath, JsonSerializer.Serialize(defaultOptions, serializerOptions));
+        File.WriteAllText(welcomeFilePath, JsonSerializer.Serialize(WelcomeContent(), serializerOptions));
+        File.WriteAllText(socialFilePath, JsonSerializer.Serialize(SocialContent(), serializerOptions));
+        File.WriteAllText(googleFilePath, JsonSerializer.Serialize(GoogleContent(), serializerOptions));
     }
 
     private static BookmarksFileContent WelcomeContent() => new()

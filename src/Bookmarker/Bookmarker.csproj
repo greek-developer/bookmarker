@@ -19,6 +19,18 @@
     </Content>
   </ItemGroup>
 
+  <!--
+    appsettings.local.json holds machine-local overrides and must never leave the machine it was
+    written on. The Web SDK globs **/*.json into Content, so a developer's own copy would
+    otherwise reach the publish output and overwrite the target machine's file on the next
+    install — the exact thing this file exists to avoid. None keeps it visible in the IDE
+    without copying it anywhere.
+  -->
+  <ItemGroup>
+    <Content Remove="appsettings.local.json" />
+    <None Include="appsettings.local.json" Condition="Exists('appsettings.local.json')" />
+  </ItemGroup>
+
   <PropertyGroup>
     <Title>Bookmarker</Title>
     <Description>Self-hosted bookmark dashboard — a personal start page served from JSON files</Description>

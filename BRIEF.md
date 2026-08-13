@@ -127,6 +127,12 @@ mocking beyond file reads.
 
 ### 2026-08-11
 
+- The root config path stays a setting; no pointer file in `%USERPROFILE%` or `%ProgramData%` is
+  introduced. Overrides go in `appsettings.local.json`, which is gitignored and excluded from
+  build and publish output so an install never overwrites the target machine's copy.
+- `appsettings.local.json` is inserted behind the last file-based configuration source rather than
+  appended: it outranks every settings file, and environment variables and command-line arguments
+  outrank it.
 - Adopted the grdev Agentic standard: `AGENTS.md` is now the synced upstream template and is never
   edited locally; everything project-specific lives in this file.
 - `CONTRIBUTING.md` was folded into this file's `## Contributing` section and deleted.

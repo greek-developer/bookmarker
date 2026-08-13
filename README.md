@@ -49,15 +49,17 @@ Change `5069` to any free port. The `*` binds to all interfaces, which is requir
 
 By default Bookmarker looks for `.bookmarker.json` at `C:\Program Files\Bookmarker\.bookmarker.json`. This works correctly whether the app runs interactively or as a Windows Service, since the path does not depend on which user account the process runs under.
 
-To store the config somewhere else, set the path explicitly in `appsettings.json`:
+To store the config somewhere else — a dotfiles repository, say, or a folder you can edit without administrator rights — create `appsettings.local.json` next to `Bookmarker.exe` and set the path there:
 
 ```json
 {
-  "BookmarkerConfigPath": "C:\\Users\\yourname\\.bookmarker.json"
+  "BookmarkerConfigPath": "D:\\dotfiles\\.bookmarker.json"
 }
 ```
 
-Leave the value empty (or omit the key entirely) to use the default next-to-exe location.
+`appsettings.local.json` is optional, is loaded after `appsettings.json`, and wins where the two disagree. Unlike `appsettings.json` it is not part of the app, so **reinstalling or upgrading leaves it untouched** — settings you want to keep across updates belong here. Restart the service after changing it.
+
+The same key still works in `appsettings.json` itself, but an update overwrites that file.
 
 ## On first run the app creates these files in `C:\Program Files\Bookmarker\`:
 

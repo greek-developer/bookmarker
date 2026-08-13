@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Build output — see AGENTS.md (Repository layout)
 release/
+
+# Machine-local configuration overrides — see specs/configuration.md
+appsettings.local.json

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 public class BookmarksTab
 {
-    public string Name {get; set; } = "";
+    public string Name { get; set; } = "";
     public BookmarksFileContent[] BookmarksFileContents { get; set; } = Array.Empty<BookmarksFileContent>();
 }
 
@@ -13,7 +13,7 @@ public class BookmarksFileContent
 {
     // The name of the file
     public string Name { get; set; } = "";
-    
+
     // List of top-level groups or bookmarks
     public BookmarksGroup[] Groups { get; set; } = Array.Empty<BookmarksGroup>();
 }
@@ -33,7 +33,7 @@ public class BookmarksGroup
 }
 
 [JsonConverter(typeof(BookmarkSetJsonConverter))]
-public class BookmarkSet: Bookmark
+public class BookmarkSet : Bookmark
 {
     // List of additional urls to be displayed on the same line or below based on design
     public Bookmark[] Bookmarks { get; set; } = Array.Empty<Bookmark>();
@@ -44,9 +44,9 @@ public class Bookmark
 {
     // The name of the bookmark
     public string Name { get; set; } = "";
-    
+
     // The Main url for the bookmark
-    public string Url { get; set; } = ""; 
+    public string Url { get; set; } = "";
 
 }
 
@@ -60,11 +60,11 @@ public class BookmarkJsonConverter : JsonConverter<Bookmark>
             var separatorIndex = raw.IndexOf('=');
 
             var name = separatorIndex < 0 ? raw : raw[..separatorIndex].Trim();
-            var url  = separatorIndex < 0 ? string.Empty : raw[(separatorIndex + 1)..].Trim();
+            var url = separatorIndex < 0 ? string.Empty : raw[(separatorIndex + 1)..].Trim();
 
             return typeToConvert == typeof(BookmarkSet)
                 ? new BookmarkSet { Name = name, Url = url }
-                : new Bookmark   { Name = name, Url = url };
+                : new Bookmark { Name = name, Url = url };
         }
 
         if (reader.TokenType == JsonTokenType.StartObject)
@@ -73,7 +73,7 @@ public class BookmarkJsonConverter : JsonConverter<Bookmark>
             var root = jsonObject.RootElement;
 
             var name = GetPropertyValue(root, "name");
-            var url  = GetPropertyValue(root, "url");
+            var url = GetPropertyValue(root, "url");
 
             // find bookmarks array case-insensitively
             Bookmark[]? bookmarks = null;

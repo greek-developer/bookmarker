@@ -8,13 +8,40 @@ first run.
 Bookmarker reads a single root config file, `.bookmarker.json`. Its location resolves in this
 order:
 
-1. The `BookmarkerConfigPath` setting in `appsettings.json`, when set to a non-empty value.
-2. Otherwise `C:\Program Files\Bookmarker\.bookmarker.json`.
+1. A `BookmarkerConfigPath` command-line argument or environment variable, when non-empty.
+2. The `BookmarkerConfigPath` setting in `appsettings.local.json`, when non-empty.
+3. The `BookmarkerConfigPath` setting in `appsettings.json`, when non-empty.
+4. Otherwise `C:\Program Files\Bookmarker\.bookmarker.json`.
 
 The default sits next to the executable rather than in `%USERPROFILE%` so the path is identical
 whether the app runs interactively or as a Windows Service. A service runs under `SYSTEM` or
 `LOCAL SERVICE`, whose home directory is not the developer's, so a profile-relative path would
 resolve somewhere invisible.
+
+## Local settings
+
+`appsettings.local.json` sits beside `appsettings.json` in the install directory and holds
+settings belonging to one machine. It is optional — absent, nothing changes — and it is loaded
+behind every other settings file, so any setting it names beats `appsettings.json`. It is not
+loaded last: environment variables and command-line arguments still override it, which keeps the
+usual one-off `--Urls=…` working against a machine that has a local file.
+
+It is neither shipped with the app nor committed to the repository. That is the whole point:
+installing copies over the top of the existing folder, so `appsettings.json` is replaced on every
+update while `appsettings.local.json` is left alone. A setting that must survive an upgrade
+belongs there.
+
+```json
+{
+  "BookmarkerConfigPath": "D:\\dotfiles\\.bookmarker.json"
+}
+```
+
+Changes take effect on the next start; the file is read once at startup and is not watched.
+
+Unlike the bookmark files, it is parsed strictly. The host loads it before the app exists, so a
+syntax error stops the process rather than rendering an error page — the reading tolerance below
+covers `.bookmarker.json` and content files only.
 
 ## Root config
 

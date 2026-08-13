@@ -2,6 +2,8 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 
+using Microsoft.Extensions.Configuration.Json;
+
 var serializerOptions = new JsonSerializerOptions
 {
     PropertyNameCaseInsensitive = true,
@@ -10,6 +12,22 @@ var serializerOptions = new JsonSerializerOptions
 };
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Machine-local overrides. This file is never shipped and never committed: an install copies
+// over the top of the existing folder, so appsettings.json is replaced on every update while
+// this one survives. The relative path resolves against the content root — the install
+// directory in both interactive and service mode, since the host falls back to the app's base
+// directory when the working directory is the one the service manager hands out.
+//
+// Slotted in behind the last file-based source rather than appended to the end, so it outranks
+// every settings file while environment variables and command-line arguments still outrank it.
+// Appending would have inverted that: the last source added wins over everything before it.
+var configSources = builder.Configuration.Sources;
+var lastFileSource = configSources.LastOrDefault(source => source is FileConfigurationSource);
+configSources.Insert(
+    lastFileSource is null ? configSources.Count : configSources.IndexOf(lastFileSource) + 1,
+    new JsonConfigurationSource { Path = "appsettings.local.json", Optional = true });
+
 builder.Host.UseWindowsService();
 var app = builder.Build();
 
@@ -108,20 +126,20 @@ string Render(
     string versionText)
 {
     var sb = new StringBuilder();
-    foreach(var (bookmarkPage, pageIndex) in bookmarkPages.Select((v,i) => (v,i)))
+    foreach (var (bookmarkPage, pageIndex) in bookmarkPages.Select((v, i) => (v, i)))
     {
         sb.AppendLine($"<input type=\"radio\" id=\"{pageIndex}\" name=\"tabs\" {(pageIndex == 0 ? "checked" : "")}>");
         sb.AppendLine($"<label for=\"{pageIndex}\"> {bookmarkPage.Name} </label>");
         sb.AppendLine("<div>");
 
-        foreach(var (bookmarkFileContent, fileIndex) in bookmarkPage.BookmarksFileContents.Select((v,i) => (v,i)))
+        foreach (var (bookmarkFileContent, fileIndex) in bookmarkPage.BookmarksFileContents.Select((v, i) => (v, i)))
         {
 
             sb.AppendLine($"<details open>");
             sb.AppendLine($"<summary><h2>{WebUtility.HtmlEncode(bookmarkFileContent.Name)}</h2></summary>");
             sb.AppendLine($"<div>");
 
-            foreach(var (group, groupIndex) in bookmarkFileContent.Groups.Select((v,i) => (v,i)))
+            foreach (var (group, groupIndex) in bookmarkFileContent.Groups.Select((v, i) => (v, i)))
             {
                 var useDetailsWrapper = !string.IsNullOrEmpty(group.Name);
                 var isTable = string.Equals(group.Layout, "table", StringComparison.OrdinalIgnoreCase);
@@ -139,7 +157,7 @@ string Render(
                     var cols = group.Sets.Length == 0 ? 1 : group.Sets.Max(s => 1 + s.Bookmarks.Length);
                     sb.AppendLine($"<div class=\"grid-group\" style=\"--cols:{cols}\">");
 
-                    foreach(var set in group.Sets)
+                    foreach (var set in group.Sets)
                     {
                         sb.AppendLine("<div class=\"grid-row\">");
 
@@ -148,7 +166,7 @@ string Render(
                             ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}</span>"
                             : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
 
-                        foreach(var bookmark in set.Bookmarks)
+                        foreach (var bookmark in set.Bookmarks)
                         {
                             sb.AppendLine($"<a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
                         }
@@ -163,7 +181,7 @@ string Render(
                     sb.AppendLine($"<div>");
                     sb.AppendLine($"<ul>");
 
-                    foreach(var set in group.Sets)
+                    foreach (var set in group.Sets)
                     {
                         sb.AppendLine("<li>");
 
@@ -172,7 +190,7 @@ string Render(
                             ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}:</span>"
                             : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
 
-                        foreach(var bookmark in set.Bookmarks)
+                        foreach (var bookmark in set.Bookmarks)
                         {
                             sb.AppendLine($" | <a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
                         }

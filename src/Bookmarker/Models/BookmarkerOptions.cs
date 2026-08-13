@@ -1,6 +1,6 @@
 public class BookmarkerOptions
 {
-    public BookmarkerTabsOptions[] Tabs { get; set; } = Array.Empty<BookmarkerTabsOptions>();    
+    public BookmarkerTabsOptions[] Tabs { get; set; } = Array.Empty<BookmarkerTabsOptions>();
 }
 
 public class BookmarkerTabsOptions
