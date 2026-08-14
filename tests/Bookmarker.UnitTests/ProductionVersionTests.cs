@@ -101,12 +101,13 @@ public class ProductionVersionTests : IDisposable
     }
 
     [Fact]
-    public void FooterText_FormatsAsVersionShaBuildTime()
+    public void FooterText_FormatsAsVersionShortShaBuildTime()
     {
         WriteVersionFile(SampleJson);
 
         var version = ProductionVersion.Read([_directory], Options);
 
-        Assert.Equal("0.8.42 - f0ba4ea1111111111111111111111111111111111 - 2026-08-11T09:14:22Z", version.FooterText);
+        // The footer shows the first 8 characters of the commit SHA.
+        Assert.Equal("0.8.42 - f0ba4ea1 - 2026-08-11T09:14:22Z", version.FooterText);
     }
 }

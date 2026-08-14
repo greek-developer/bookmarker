@@ -45,5 +45,8 @@ than failing.
 {version} - {commit-sha} - {build-time}
 ```
 
+`{commit-sha}` is the first 8 characters of the commit SHA; the full SHA stays in the JSON
+and at `GET /api/diagnostics/version`.
+
 **`GET /api/diagnostics/version`** returns the contents of `ProductionVersion.json` as JSON. This
 is what a health check or a deployment script reads; it needs no page parsing and no browser.

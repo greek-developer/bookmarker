@@ -21,8 +21,12 @@ public class ProductionVersion
     [JsonIgnore]
     public string RawJson { get; set; } = "";
 
-    // The identity line shown in the page footer.
-    public string FooterText => $"{Version} - {Commit.Sha} - {Build.Time}";
+    // The identity line shown in the page footer. The commit is shortened to its first 8
+    // characters (see AGENTS.md > Production version file) — enough to identify it at a
+    // glance; the full SHA stays in the JSON and at GET /api/diagnostics/version.
+    public string FooterText => $"{Version} - {ShortSha} - {Build.Time}";
+
+    private string ShortSha => Commit.Sha.Length >= 8 ? Commit.Sha[..8] : Commit.Sha;
 
     // Reads the file from the first directory that has one. A missing or unreadable file is not
     // an error — running from a source tree that was never published still serves the page, with
