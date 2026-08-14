@@ -31,9 +31,11 @@ its links directly, with no heading and no collapse control.
 
 ## Links
 
-Every link opens in a new tab. A set's related links sit on the same row as the primary link,
-visually subordinate to it. A set with no URL renders as a plain text label — a way to caption a
-row rather than link it.
+Every link opens in a new tab and carries `rel="noreferrer"`, so the destination is told nothing
+about where it was opened from — bookmark files routinely point at internal hosts whose addresses
+have no business reaching a public site. A set's related links sit on the same row as the primary
+link, visually subordinate to it. A set with no URL renders as a plain text label — a way to
+caption a row rather than link it.
 
 ## Footer
 

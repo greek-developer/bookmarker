@@ -164,11 +164,11 @@ string Render(
                         sb.AppendLine(
                             string.IsNullOrEmpty(set.Url)
                             ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}</span>"
-                            : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
+                            : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\" rel=\"noreferrer\">{WebUtility.HtmlEncode(set.Name)}</a>");
 
                         foreach (var bookmark in set.Bookmarks)
                         {
-                            sb.AppendLine($"<a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
+                            sb.AppendLine($"<a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\" rel=\"noreferrer\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
                         }
 
                         sb.AppendLine("</div>");
@@ -188,11 +188,11 @@ string Render(
                         sb.AppendLine(
                             string.IsNullOrEmpty(set.Url)
                             ? $"<span class=\"set-label\">{WebUtility.HtmlEncode(set.Name)}:</span>"
-                            : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(set.Name)}</a>");
+                            : $"<a href=\"{WebUtility.HtmlEncode(set.Url)}\" target=\"_blank\" rel=\"noreferrer\">{WebUtility.HtmlEncode(set.Name)}</a>");
 
                         foreach (var bookmark in set.Bookmarks)
                         {
-                            sb.AppendLine($" | <a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
+                            sb.AppendLine($" | <a href=\"{WebUtility.HtmlEncode(bookmark.Url)}\" target=\"_blank\" rel=\"noreferrer\">{WebUtility.HtmlEncode(bookmark.Name)}</a>");
                         }
 
                         sb.AppendLine($"</li>");
