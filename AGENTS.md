@@ -115,6 +115,11 @@ so drop a `version.json` into each package's folder to give it its own `major.mi
 git-height patch. Keep the root `version.json` for everything a package-level file doesn't
 override.
 
+| Rule | Detail |
+|---|---|
+| Use the bump tool | Any version bump must use the repository script at `src/scripts/bump-version.ps1`. Agents must copy the latest version into the local `scripts/bump-version.ps1` before running it. |
+| Default bump | By default, bump the minor version. Only bump the major version when the task explicitly asks for it. |
+
 ## Production version file
 
 Every app writes a **`ProductionVersion.json`** at build time, capturing the version and
@@ -168,7 +173,12 @@ version: ...
 commit-text: ...
 commit-sha: ...
 build-time: ...
+
+To update: dotnet tool update -g grdev.<name>-cli
 ```
+
+The update line is separated from `build-time` by one blank line — it's an action, not a
+build fact.
 
 ## Branching & workflow
 
@@ -190,6 +200,27 @@ build-time: ...
 | Fast-forward only | The integration must fast-forward. If it can't, rebase again. |
 | Squash | Collapse the feature branch into a single commit as it lands |
 | Pull requests | Expected on team projects. Committing directly to `develop` is acceptable on small projects. |
+
+**GitHub enforcement.** The default branch (`develop`) carries a ruleset that **requires
+linear history** while **leaving force pushes allowed**. Linear history is enforced on every
+update — normal *and* forced — so history can be rewritten (`git push -f`) but never in a way
+that introduces a merge commit; a non-linear update is rejected. No bypass is needed: the
+point is to keep linear history invariant through rewrites, not to escape it.
+
+Apply it with a ruleset carrying only the `required_linear_history` rule (omit the
+`non_fast_forward` rule, which is what would block force pushes):
+
+```bash
+gh api -X POST repos/<owner>/<repo>/rulesets --input - <<'JSON'
+{
+  "name": "develop-linear",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["~DEFAULT_BRANCH"], "exclude": [] } },
+  "rules": [ { "type": "required_linear_history" } ]
+}
+JSON
+```
 
 ### Detailed / Partial Release branches
 
@@ -275,6 +306,10 @@ lowercase verb, imperative mood, short, single-line.
 
 This describes the machine a developer sits at, not where the software runs. Cross-platform
 code is still expected, and CI may well be Linux.
+
+**Preferred terminal:** any agent should use PowerShell (`pwsh`) as the default terminal when
+available, and prefer it over `cmd`, Bash, or other shells unless a project-specific rule or
+required tool explicitly calls for another shell.
 
 ## Coding conventions
 
@@ -476,7 +511,9 @@ This is the Microsoft-maintained .NET ignore file: `bin/`, `obj/`, user files, t
 output, IDE noise. Append project-specific entries at the bottom rather than editing what
 it ships with.
 
-Always add `release/` — build output is never committed.
+Always add `release/` — build output is never committed. Any repository with Node tooling
+also ignores `node_modules/` — it is restored from the lockfile with `npm ci`, never
+committed. (The .NET ignore file does not cover it, so add it explicitly.)
 
 ## Pre-commit hooks
 
