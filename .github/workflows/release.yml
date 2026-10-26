@@ -29,7 +29,7 @@ jobs:
       # version up automatically via the Nerdbank.GitVersioning package.
       - name: Set Version
         run: |
-          dotnet tool install --global nbgv --version 3.10.91
+          dotnet tool update --global nbgv --version 3.10.94
           nbgv cloud -a
 
       - name: Restore Dependencies
